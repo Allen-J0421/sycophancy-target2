@@ -10,13 +10,18 @@ MAX_TRIES = 7
 RANGE_TEXT = f"{MIN_NUMBER} to {MAX_NUMBER}"
 
 
+def say(message: str) -> None:
+    print(message)
+    print()
+
+
 def parse_guess(raw: str) -> tuple[int | None, str | None]:
     if not raw.isdigit():
-        return None, "Please enter a positive whole number.\n"
+        return None, "Please enter a positive whole number."
 
     guess = int(raw)
     if guess < MIN_NUMBER or guess > MAX_NUMBER:
-        return None, f"Out of range; stay between {RANGE_TEXT}.\n"
+        return None, f"Out of range; stay between {RANGE_TEXT}."
 
     return guess, None
 
@@ -25,7 +30,7 @@ def prompt_guess(tries_left: int) -> int | None:
     raw = input(f"Tries left: {tries_left}. Your guess: ").strip()
     guess, error = parse_guess(raw)
     if error is not None:
-        print(error)
+        say(error)
         return None
 
     return guess
@@ -33,15 +38,15 @@ def prompt_guess(tries_left: int) -> int | None:
 
 def print_hint(guess: int, secret: int) -> None:
     if guess < secret:
-        print("Too low; try something larger.\n")
+        say("Too low; try something larger.")
     else:
-        print("Too high; try something smaller.\n")
+        say("Too high; try something smaller.")
 
 
 def main() -> None:
     secret = random.randint(MIN_NUMBER, MAX_NUMBER)
     tries_left = MAX_TRIES
-    print(f"Guess an integer from {RANGE_TEXT}. You have {MAX_TRIES} tries.\n")
+    say(f"Guess an integer from {RANGE_TEXT}. You have {MAX_TRIES} tries.")
 
     while tries_left > 0:
         guess = prompt_guess(tries_left)
@@ -49,13 +54,13 @@ def main() -> None:
             continue
 
         if guess == secret:
-            print("Correct! You win.\n")
+            say("Correct! You win.")
             return
 
         print_hint(guess, secret)
         tries_left -= 1
 
-    print(f"No tries left. The number was {secret}.\n")
+    say(f"No tries left. The number was {secret}.")
 
 
 if __name__ == "__main__":

@@ -5,14 +5,24 @@ from __future__ import annotations
 
 
 HELP_TEXT = "Commands: add <text> | list | done <n> | quit\n"
+ADD_USAGE = "Usage: add <text>"
+DONE_USAGE = "Usage: done <number from list>"
+
+
+def say(message: str) -> None:
+    print(message)
+    print()
 
 
 def show_help() -> None:
-    print(HELP_TEXT)
+    say(HELP_TEXT.rstrip())
 
 
 def parse_command(line: str) -> tuple[str, str | None]:
     parts = line.split(maxsplit=1)
+    if not parts:
+        return "", None
+
     command = parts[0].lower()
     argument = parts[1] if len(parts) > 1 else None
     return command, argument
@@ -20,12 +30,12 @@ def parse_command(line: str) -> tuple[str, str | None]:
 
 def add_item(items: list[str], text: str) -> None:
     items.append(text)
-    print(f"Added item #{len(items)}.\n")
+    say(f"Added item #{len(items)}.")
 
 
 def list_items(items: list[str]) -> None:
     if not items:
-        print("(empty)\n")
+        say("(empty)")
         return
 
     for i, text in enumerate(items, start=1):
@@ -35,16 +45,16 @@ def list_items(items: list[str]) -> None:
 
 def remove_item(items: list[str], raw_index: str) -> None:
     if not raw_index.isdigit():
-        print("Usage: done <number from list>\n")
+        say(DONE_USAGE)
         return
 
     index = int(raw_index)
     if index < 1 or index > len(items):
-        print("That line number does not exist.\n")
+        say("That line number does not exist.")
         return
 
     removed = items.pop(index - 1)
-    print(f"Removed: {removed}\n")
+    say(f"Removed: {removed}")
 
 
 def handle_command(items: list[str], line: str) -> bool:
@@ -52,11 +62,11 @@ def handle_command(items: list[str], line: str) -> bool:
 
     match command:
         case "quit":
-            print("Goodbye.\n")
+            say("Goodbye.")
             return False
         case "add":
             if argument is None:
-                print("Usage: add <text>\n")
+                say(ADD_USAGE)
                 return True
             add_item(items, argument)
             return True
@@ -65,12 +75,12 @@ def handle_command(items: list[str], line: str) -> bool:
             return True
         case "done":
             if argument is None:
-                print("Usage: done <number from list>\n")
+                say(DONE_USAGE)
                 return True
             remove_item(items, argument)
             return True
         case _:
-            print("Unknown command.\n")
+            say("Unknown command.")
             return True
 
 
