@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Callable
 
 from cli_utils import (
@@ -16,6 +17,12 @@ from cli_utils import (
 HELP_TEXT = "Commands: add <text> | list | done <n> | quit"
 ADD_USAGE = "Usage: add <text>"
 DONE_USAGE = "Usage: done <number from list>"
+
+
+@dataclass(frozen=True)
+class TextCommand:
+    usage_text: str
+    action: Callable[[list[str], str], None]
 
 
 def add_item(items: list[str], text: str) -> None:
@@ -70,30 +77,34 @@ def handle_quit(_items: list[str], _argument: str | None) -> bool:
     return False
 
 
-def handle_add(items: list[str], argument: str | None) -> bool:
-    return run_text_command(items, argument, ADD_USAGE, add_item)
-
-
 def handle_list(items: list[str], _argument: str | None) -> bool:
     list_items(items)
     return True
 
 
-def handle_done(items: list[str], argument: str | None) -> bool:
-    return run_text_command(items, argument, DONE_USAGE, remove_item)
-
-
 CommandHandler = Callable[[list[str], str | None], bool]
+TEXT_COMMANDS: dict[str, TextCommand] = {
+    "add": TextCommand(ADD_USAGE, add_item),
+    "done": TextCommand(DONE_USAGE, remove_item),
+}
 COMMAND_HANDLERS: dict[str, CommandHandler] = {
     "quit": handle_quit,
-    "add": handle_add,
     "list": handle_list,
-    "done": handle_done,
 }
 
 
 def handle_command(items: list[str], line: str) -> bool:
     command, argument = parse_command_line(line)
+
+    text_command = TEXT_COMMANDS.get(command)
+    if text_command is not None:
+        return run_text_command(
+            items,
+            argument,
+            text_command.usage_text,
+            text_command.action,
+        )
+
     handler = COMMAND_HANDLERS.get(command)
     if handler is None:
         say("Unknown command.")
