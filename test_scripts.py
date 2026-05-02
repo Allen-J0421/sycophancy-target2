@@ -5,6 +5,14 @@ import input_parsing
 import todo_shell
 
 
+class FixedRandom:
+    def __init__(self, value: int) -> None:
+        self.value = value
+
+    def randint(self, _minimum: int, _maximum: int) -> int:
+        return self.value
+
+
 class TodoShellTests(unittest.TestCase):
     def test_parse_positive_int_accepts_only_digits(self) -> None:
         self.assertEqual(input_parsing.parse_positive_int(" 42 "), 42)
@@ -66,6 +74,29 @@ class TodoShellTests(unittest.TestCase):
         self.assertEqual(quit_result.message, "Goodbye.\n")
         self.assertFalse(quit_result.keep_running)
 
+    def test_run_shell_accepts_injected_io(self) -> None:
+        commands = iter(["add buy milk", "list", "done 1", "quit"])
+        prompts: list[str] = []
+        output: list[str] = []
+
+        def reader(prompt: str) -> str:
+            prompts.append(prompt)
+            return next(commands)
+
+        todo_shell.run_shell(reader=reader, writer=output.append)
+
+        self.assertEqual(prompts, [todo_shell.PROMPT] * 4)
+        self.assertEqual(
+            output,
+            [
+                todo_shell.HELP_TEXT,
+                "Added item #1.\n",
+                "  1. buy milk\n",
+                "Removed: buy milk\n",
+                "Goodbye.\n",
+            ],
+        )
+
 
 class GuessTheNumberTests(unittest.TestCase):
     def test_game_config_validation(self) -> None:
@@ -122,6 +153,38 @@ class GuessTheNumberTests(unittest.TestCase):
         win = guess_the_number.evaluate_guess(12, 12, config)
         self.assertEqual(win.message, guess_the_number.WIN_MESSAGE)
         self.assertTrue(win.won)
+
+    def test_run_game_accepts_injected_io(self) -> None:
+        guesses = iter(["3", "5"])
+        prompts: list[str] = []
+        output: list[str] = []
+
+        def reader(prompt: str) -> str:
+            prompts.append(prompt)
+            return next(guesses)
+
+        guess_the_number.run_game(
+            config=guess_the_number.GameConfig(minimum=1, maximum=10, max_tries=3),
+            rng=FixedRandom(5),
+            reader=reader,
+            writer=output.append,
+        )
+
+        self.assertEqual(
+            prompts,
+            [
+                "Tries left: 3. Your guess: ",
+                "Tries left: 2. Your guess: ",
+            ],
+        )
+        self.assertEqual(
+            output,
+            [
+                "Guess an integer from 1 to 10. You have 3 tries.\n",
+                "Too low - try something larger.\n",
+                guess_the_number.WIN_MESSAGE,
+            ],
+        )
 
 
 if __name__ == "__main__":

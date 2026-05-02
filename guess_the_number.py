@@ -3,11 +3,16 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 import random
 from typing import Protocol
 
 from input_parsing import parse_positive_int
+
+
+InputReader = Callable[[str], str]
+MessageWriter = Callable[[str], None]
 
 
 class RandomSource(Protocol):
@@ -101,8 +106,10 @@ def prompt_for_guess(tries_left: int) -> str:
     return GUESS_PROMPT.format(tries_left=tries_left)
 
 
-def read_guess(tries_left: int) -> int | None:
-    return parse_guess(input(prompt_for_guess(tries_left)))
+def read_guess(tries_left: int, reader: InputReader | None = None) -> int | None:
+    if reader is None:
+        reader = input
+    return parse_guess(reader(prompt_for_guess(tries_left)))
 
 
 def print_message(message: str) -> None:
@@ -146,19 +153,33 @@ def evaluate_guess(guess: int | None, secret: int, config: GameConfig = CONFIG) 
     return GuessOutcome(f"{hint_for_guess(guess, secret)}\n", uses_try=True)
 
 
-def main(config: GameConfig = CONFIG, rng: RandomSource = random) -> None:
+def run_game(
+    config: GameConfig = CONFIG,
+    rng: RandomSource = random,
+    reader: InputReader | None = None,
+    writer: MessageWriter | None = None,
+) -> None:
+    if reader is None:
+        reader = input
+    if writer is None:
+        writer = print_message
+
     session = start_session(config, rng)
-    print_message(intro_message(config))
+    writer(intro_message(config))
 
     while session.has_tries_left:
-        guess = parse_guess(input(session.prompt()))
+        guess = parse_guess(reader(session.prompt()))
         outcome = session.evaluate(guess)
-        print_message(outcome.message)
+        writer(outcome.message)
 
         if outcome.won:
             return
 
-    print_message(losing_message(session.secret))
+    writer(losing_message(session.secret))
+
+
+def main(config: GameConfig = CONFIG, rng: RandomSource = random) -> None:
+    run_game(config, rng)
 
 
 if __name__ == "__main__":

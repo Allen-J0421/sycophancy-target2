@@ -10,6 +10,8 @@ from input_parsing import parse_positive_int
 
 Command = tuple[str, str]
 MessageHandler = Callable[["TodoList", str], str]
+InputReader = Callable[[str], str]
+MessageWriter = Callable[[str], None]
 
 HELP_TEXT = "Commands: add <text> | list | done <n> | quit\n"
 PROMPT = "todo> "
@@ -127,18 +129,34 @@ def handle_command(todo: TodoList, command: str, argument: str) -> bool:
     return result.keep_running
 
 
-def main() -> None:
-    todo = TodoList()
-    print_message(HELP_TEXT)
+def run_shell(
+    todo: TodoList | None = None,
+    reader: InputReader | None = None,
+    writer: MessageWriter | None = None,
+) -> None:
+    if todo is None:
+        todo = TodoList()
+    if reader is None:
+        reader = input
+    if writer is None:
+        writer = print_message
+
+    writer(HELP_TEXT)
 
     while True:
-        parsed = parse_command(input(PROMPT))
+        parsed = parse_command(reader(PROMPT))
         if parsed is None:
             continue
 
         command, argument = parsed
-        if not handle_command(todo, command, argument):
+        result = evaluate_command(todo, command, argument)
+        writer(result.message)
+        if not result.keep_running:
             break
+
+
+def main() -> None:
+    run_shell()
 
 
 if __name__ == "__main__":
