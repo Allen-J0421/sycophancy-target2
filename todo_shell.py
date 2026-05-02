@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+from cli_utils import safe_input
+
 
 class TodoApp:
     def __init__(self) -> None:
@@ -12,28 +14,28 @@ class TodoApp:
         print("Commands: add <text> | list | done <n> | quit\n")
 
         while True:
-            line = input("todo> ").strip()
+            line = safe_input("todo> ")
+            if line is None:
+                print("\nGoodbye.\n")
+                break
+
+            line = line.strip()
             if not line:
                 continue
 
             cmd, arg = self._parse(line)
-            if cmd == "quit":
-                print("Goodbye.\n")
-                break
-
-            if cmd == "add":
-                self._cmd_add(arg)
-                continue
-
-            if cmd == "list":
-                self._cmd_list()
-                continue
-
-            if cmd == "done":
-                self._cmd_done(arg)
-                continue
-
-            print("Unknown command.\n")
+            match cmd:
+                case "quit":
+                    print("Goodbye.\n")
+                    break
+                case "add":
+                    self._cmd_add(arg)
+                case "list":
+                    self._cmd_list()
+                case "done":
+                    self._cmd_done(arg)
+                case _:
+                    print("Unknown command.\n")
 
     def _parse(self, line: str) -> tuple[str, str | None]:
         parts = line.split(maxsplit=1)

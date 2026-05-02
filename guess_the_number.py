@@ -3,15 +3,21 @@
 
 import random
 
+from cli_utils import safe_input
+
 
 MIN_NUMBER = 1
 MAX_NUMBER = 100
 MAX_TRIES = 7
 
 
-def read_guess(*, tries_left: int) -> int:
+def read_guess(*, tries_left: int) -> int | None:
     while True:
-        raw = input(f"Tries left: {tries_left}. Your guess: ").strip()
+        raw = safe_input(f"Tries left: {tries_left}. Your guess: ")
+        if raw is None:
+            return None
+
+        raw = raw.strip()
         if not raw.isdigit():
             print("Please enter a positive whole number.\n")
             continue
@@ -33,6 +39,10 @@ def main() -> None:
 
     while tries_left > 0:
         guess = read_guess(tries_left=tries_left)
+        if guess is None:
+            print("\nGoodbye.\n")
+            return
+
         if guess == secret:
             print("Correct! You win.\n")
             return
