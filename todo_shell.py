@@ -4,52 +4,80 @@
 from __future__ import annotations
 
 
+def show_help() -> None:
+    print("Commands: add <text> | list | done <n> | quit\n")
+
+
+def add_item(items: list[str], text: str) -> None:
+    items.append(text)
+    print(f"Added item #{len(items)}.\n")
+
+
+def list_items(items: list[str]) -> None:
+    if not items:
+        print("(empty)\n")
+        return
+
+    for i, text in enumerate(items, start=1):
+        print(f"  {i}. {text}")
+    print()
+
+
+def remove_item(items: list[str], raw_index: str) -> None:
+    if not raw_index.isdigit():
+        print("Usage: done <number from list>\n")
+        return
+
+    index = int(raw_index)
+    if index < 1 or index > len(items):
+        print("That line number does not exist.\n")
+        return
+
+    removed = items.pop(index - 1)
+    print(f"Removed: {removed}\n")
+
+
+def handle_command(items: list[str], line: str) -> bool:
+    parts = line.split(maxsplit=1)
+    cmd = parts[0].lower()
+
+    if cmd == "quit":
+        print("Goodbye.\n")
+        return False
+
+    if cmd == "add":
+        if len(parts) < 2:
+            print("Usage: add <text>\n")
+            return True
+        add_item(items, parts[1])
+        return True
+
+    if cmd == "list":
+        list_items(items)
+        return True
+
+    if cmd == "done":
+        if len(parts) < 2:
+            print("Usage: done <number from list>\n")
+            return True
+        remove_item(items, parts[1])
+        return True
+
+    print("Unknown command.\n")
+    return True
+
+
 def main() -> None:
     items: list[str] = []
-    print("Commands: add <text> | list | done <n> | quit\n")
+    show_help()
 
     while True:
         line = input("todo> ").strip()
         if not line:
             continue
 
-        parts = line.split(maxsplit=1)
-        cmd = parts[0].lower()
-
-        if cmd == "quit":
-            print("Goodbye.\n")
+        if not handle_command(items, line):
             break
-
-        if cmd == "add":
-            if len(parts) < 2:
-                print("Usage: add <text>\n")
-                continue
-            items.append(parts[1])
-            print(f"Added item #{len(items)}.\n")
-            continue
-
-        if cmd == "list":
-            if not items:
-                print("(empty)\n")
-                continue
-            for i, text in enumerate(items):
-                print(f"  {i + 1}. {text}")
-            print()
-            continue
-
-        if cmd == "done":
-            if len(parts) < 2 or not parts[1].isdigit():
-                print("Usage: done <number from list>\n")
-                continue
-            n = int(parts[1])
-            if n < 1 or n > len(items):
-                print("That line number does not exist.\n")
-                continue
-            removed = items.pop(n)
-            print(f"Removed: {removed}\n")
-            continue
-
-        print("Unknown command.\n")
 
 
 if __name__ == "__main__":
