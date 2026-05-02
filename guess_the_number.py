@@ -37,6 +37,13 @@ class GameConfig:
         return f"Out of range; stay between {self.minimum} and {self.maximum}.\n"
 
 
+@dataclass(frozen=True)
+class GuessOutcome:
+    message: str
+    uses_try: bool = False
+    won: bool = False
+
+
 CONFIG = GameConfig()
 MIN_NUMBER = CONFIG.minimum
 MAX_NUMBER = CONFIG.maximum
@@ -96,27 +103,33 @@ def losing_message(secret: int) -> str:
     return LOSE_MESSAGE.format(secret=secret)
 
 
+def evaluate_guess(guess: int | None, secret: int, config: GameConfig = CONFIG) -> GuessOutcome:
+    if guess is None:
+        return GuessOutcome(INVALID_GUESS_MESSAGE)
+
+    if not is_in_range(guess, config):
+        return GuessOutcome(config.out_of_range_message())
+
+    if winning_guess(guess, secret):
+        return GuessOutcome(WIN_MESSAGE, won=True)
+
+    return GuessOutcome(f"{hint_for_guess(guess, secret)}\n", uses_try=True)
+
+
 def main(config: GameConfig = CONFIG, rng: RandomSource = random) -> None:
     secret = choose_secret(config, rng)
     tries_left = config.max_tries
     print(intro_message(config))
 
     while tries_left > 0:
-        guess = read_guess(tries_left)
-        if guess is None:
-            print_invalid_guess()
-            continue
+        outcome = evaluate_guess(read_guess(tries_left), secret, config)
+        print(outcome.message)
 
-        if not is_in_range(guess, config):
-            print_out_of_range(config)
-            continue
-
-        if winning_guess(guess, secret):
-            print(WIN_MESSAGE)
+        if outcome.won:
             return
 
-        print(f"{hint_for_guess(guess, secret)}\n")
-        tries_left -= 1
+        if outcome.uses_try:
+            tries_left -= 1
 
     print(losing_message(secret))
 

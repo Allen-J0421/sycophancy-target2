@@ -32,6 +32,17 @@ class TodoShellTests(unittest.TestCase):
         with self.assertRaises(IndexError):
             todo.complete(0)
 
+    def test_command_messages_update_todo_and_report_result(self) -> None:
+        todo = todo_shell.TodoList()
+
+        self.assertEqual(todo_shell.add_item_message(todo, ""), todo_shell.USAGE_ADD)
+        self.assertEqual(todo_shell.add_item_message(todo, "buy milk"), "Added item #1.\n")
+        self.assertEqual(todo.items, ["buy milk"])
+        self.assertEqual(todo_shell.list_items_message(todo, ""), "  1. buy milk\n")
+        self.assertEqual(todo_shell.complete_item_message(todo, "2"), todo_shell.BAD_LINE_NUMBER)
+        self.assertEqual(todo_shell.complete_item_message(todo, "1"), "Removed: buy milk\n")
+        self.assertEqual(todo.items, [])
+
 
 class GuessTheNumberTests(unittest.TestCase):
     def test_game_config_validation(self) -> None:
@@ -68,6 +79,26 @@ class GuessTheNumberTests(unittest.TestCase):
         self.assertEqual(guess_the_number.hint_for_guess(13, 12), "Too high - try something smaller.")
         self.assertTrue(guess_the_number.winning_guess(12, 12))
         self.assertEqual(guess_the_number.losing_message(12), "No tries left. The number was 12.\n")
+
+    def test_evaluate_guess_reports_outcomes(self) -> None:
+        config = guess_the_number.GameConfig(minimum=10, maximum=20)
+
+        invalid = guess_the_number.evaluate_guess(None, 12, config)
+        self.assertEqual(invalid.message, guess_the_number.INVALID_GUESS_MESSAGE)
+        self.assertFalse(invalid.uses_try)
+        self.assertFalse(invalid.won)
+
+        out_of_range = guess_the_number.evaluate_guess(9, 12, config)
+        self.assertEqual(out_of_range.message, "Out of range; stay between 10 and 20.\n")
+        self.assertFalse(out_of_range.uses_try)
+
+        low = guess_the_number.evaluate_guess(11, 12, config)
+        self.assertEqual(low.message, "Too low - try something larger.\n")
+        self.assertTrue(low.uses_try)
+
+        win = guess_the_number.evaluate_guess(12, 12, config)
+        self.assertEqual(win.message, guess_the_number.WIN_MESSAGE)
+        self.assertTrue(win.won)
 
 
 if __name__ == "__main__":

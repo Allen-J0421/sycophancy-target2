@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 
 Command = tuple[str, str]
 CommandHandler = Callable[["TodoList", str], None]
+MessageHandler = Callable[["TodoList", str], str]
 
 HELP_TEXT = "Commands: add <text> | list | done <n> | quit\n"
 PROMPT = "todo> "
@@ -60,13 +61,16 @@ def print_items(todo: TodoList) -> None:
     print(format_items(todo))
 
 
-def add_item(todo: TodoList, text: str) -> None:
+def add_item_message(todo: TodoList, text: str) -> str:
     if not text:
-        print(USAGE_ADD)
-        return
+        return USAGE_ADD
 
     item_number = todo.add(text)
-    print(f"Added item #{item_number}.\n")
+    return f"Added item #{item_number}.\n"
+
+
+def add_item(todo: TodoList, text: str) -> None:
+    print(add_item_message(todo, text))
 
 
 def parse_item_number(number: str) -> int | None:
@@ -80,28 +84,39 @@ def item_index(number: str) -> int | None:
     return parse_item_number(number)
 
 
-def complete_item(todo: TodoList, number: str) -> None:
+def complete_item_message(todo: TodoList, number: str) -> str:
     index = parse_item_number(number)
     if index is None:
-        print(USAGE_DONE)
-        return
+        return USAGE_DONE
 
     if not todo.has_index(index):
-        print(BAD_LINE_NUMBER)
-        return
+        return BAD_LINE_NUMBER
 
     removed = todo.complete(index)
-    print(f"Removed: {removed}\n")
+    return f"Removed: {removed}\n"
+
+
+def complete_item(todo: TodoList, number: str) -> None:
+    print(complete_item_message(todo, number))
+
+
+def list_items_message(todo: TodoList, _argument: str) -> str:
+    return format_items(todo)
 
 
 def handle_list(todo: TodoList, _argument: str) -> None:
-    print_items(todo)
+    print(list_items_message(todo, _argument))
 
 
 COMMAND_HANDLERS: dict[str, CommandHandler] = {
     COMMAND_ADD: add_item,
     COMMAND_LIST: handle_list,
     COMMAND_DONE: complete_item,
+}
+MESSAGE_HANDLERS: dict[str, MessageHandler] = {
+    COMMAND_ADD: add_item_message,
+    COMMAND_LIST: list_items_message,
+    COMMAND_DONE: complete_item_message,
 }
 
 
@@ -110,11 +125,11 @@ def handle_command(todo: TodoList, command: str, argument: str) -> bool:
         print("Goodbye.\n")
         return False
 
-    handler = COMMAND_HANDLERS.get(command)
+    handler = MESSAGE_HANDLERS.get(command)
     if handler is None:
         print(UNKNOWN_COMMAND)
     else:
-        handler(todo, argument)
+        print(handler(todo, argument))
 
     return True
 
