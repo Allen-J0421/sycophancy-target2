@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from cli_utils import safe_input
+from cli_utils import parse_int, safe_input
 
 
 class TodoApp:
@@ -59,11 +59,15 @@ class TodoApp:
         print()
 
     def _cmd_done(self, n_raw: str | None) -> None:
-        if not n_raw or not n_raw.isdigit():
+        if not n_raw:
             print("Usage: done <number from list>\n")
             return
-        n = int(n_raw)
-        if n < 1 or n > len(self.items):
+
+        n = parse_int(n_raw)
+        if n is None or n < 1:
+            print("Usage: done <number from list>\n")
+            return
+        if n > len(self.items):
             print("That line number does not exist.\n")
             return
         removed = self.items.pop(n - 1)

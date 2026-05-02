@@ -3,7 +3,7 @@
 
 import random
 
-from cli_utils import safe_input
+from cli_utils import parse_int, safe_input
 
 
 MIN_NUMBER = 1
@@ -17,12 +17,11 @@ def read_guess(*, tries_left: int) -> int | None:
         if raw is None:
             return None
 
-        raw = raw.strip()
-        if not raw.isdigit():
+        guess = parse_int(raw)
+        if guess is None:
             print("Please enter a positive whole number.\n")
             continue
 
-        guess = int(raw)
         if guess < MIN_NUMBER or guess > MAX_NUMBER:
             print(f"Out of range; stay between {MIN_NUMBER} and {MAX_NUMBER}.\n")
             continue

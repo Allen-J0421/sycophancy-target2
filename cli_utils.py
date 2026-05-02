@@ -11,3 +11,13 @@ def safe_input(prompt: str) -> str | None:
     except (EOFError, KeyboardInterrupt):
         return None
 
+
+def parse_int(text: str) -> int | None:
+    """Parse a base-10 integer; return None if invalid."""
+    text = text.strip()
+    if not text:
+        return None
+    try:
+        return int(text, 10)
+    except ValueError:
+        return None
