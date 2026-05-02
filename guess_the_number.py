@@ -13,8 +13,13 @@ RANGE_TEXT = f"{MIN_NUMBER} to {MAX_NUMBER}"
 
 
 def prompt_guess(tries_left: int) -> int | None:
-    raw = prompt_line(f"Tries left: {tries_left}. Your guess: ")
-    guess, error = parse_int_in_range(raw, MIN_NUMBER, MAX_NUMBER, range_text=RANGE_TEXT)
+    raw_guess = prompt_line(f"Tries left: {tries_left}. Your guess: ")
+    guess, error = parse_int_in_range(
+        raw_guess,
+        MIN_NUMBER,
+        MAX_NUMBER,
+        range_text=RANGE_TEXT,
+    )
     if error is not None:
         say(error)
         return None
@@ -22,19 +27,18 @@ def prompt_guess(tries_left: int) -> int | None:
     return guess
 
 
-def print_hint(guess: int, secret: int) -> None:
+def guess_feedback(guess: int, secret: int) -> str:
     if guess < secret:
-        say("Too low; try something larger.")
-    else:
-        say("Too high; try something smaller.")
+        return "Too low; try something larger."
+
+    return "Too high; try something smaller."
 
 
 def main() -> None:
     secret = random.randint(MIN_NUMBER, MAX_NUMBER)
-    tries_left = MAX_TRIES
     say(f"Guess an integer from {RANGE_TEXT}. You have {MAX_TRIES} tries.")
 
-    while tries_left > 0:
+    for tries_left in range(MAX_TRIES, 0, -1):
         guess = prompt_guess(tries_left)
         if guess is None:
             continue
@@ -43,8 +47,7 @@ def main() -> None:
             say("Correct! You win.")
             return
 
-        print_hint(guess, secret)
-        tries_left -= 1
+        say(guess_feedback(guess, secret))
 
     say(f"No tries left. The number was {secret}.")
 

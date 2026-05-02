@@ -18,10 +18,6 @@ ADD_USAGE = "Usage: add <text>"
 DONE_USAGE = "Usage: done <number from list>"
 
 
-def show_help() -> None:
-    say(HELP_TEXT)
-
-
 def add_item(items: list[str], text: str) -> None:
     items.append(text)
     say(f"Added item #{len(items)}.")
@@ -43,13 +39,16 @@ def run_text_command(
 
 
 def list_items(items: list[str]) -> None:
-    if not items:
-        say("(empty)")
-        return
-
-    for i, text in enumerate(items, start=1):
-        print(f"  {i}. {text}")
+    for line in format_items(items):
+        print(line)
     print()
+
+
+def format_items(items: list[str]) -> list[str]:
+    if not items:
+        return ["(empty)"]
+
+    return [f"  {i}. {text}" for i, text in enumerate(items, start=1)]
 
 
 def remove_item(items: list[str], raw_index: str) -> None:
@@ -105,7 +104,7 @@ def handle_command(items: list[str], line: str) -> bool:
 
 def main() -> None:
     items: list[str] = []
-    show_help()
+    say(HELP_TEXT)
 
     while True:
         line = prompt_line("todo> ")
