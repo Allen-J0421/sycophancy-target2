@@ -4,9 +4,9 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from dataclasses import dataclass, field
 
 Command = tuple[str, str]
-CommandHandler = Callable[[list[str], str], None]
 HELP_TEXT = "Commands: add <text> | list | done <n> | quit\n"
 PROMPT = "todo> "
 COMMAND_ADD = "add"
@@ -14,6 +14,24 @@ COMMAND_LIST = "list"
 COMMAND_DONE = "done"
 COMMAND_QUIT = "quit"
 QUIT_COMMANDS = {COMMAND_QUIT}
+
+
+@dataclass
+class TodoList:
+    items: list[str] = field(default_factory=list)
+
+    def add(self, text: str) -> int:
+        self.items.append(text)
+        return len(self.items)
+
+    def complete(self, index: int) -> str:
+        return self.items.pop(index)
+
+    def has_index(self, index: int) -> bool:
+        return 0 <= index < len(self.items)
+
+
+CommandHandler = Callable[[TodoList, str], None]
 
 
 def parse_command(line: str) -> Command | None:
@@ -25,25 +43,25 @@ def parse_command(line: str) -> Command | None:
     return command.lower(), argument.strip()
 
 
-def format_items(items: list[str]) -> str:
-    if not items:
+def format_items(todo: TodoList) -> str:
+    if not todo.items:
         return "(empty)\n"
 
-    lines = [f"  {index}. {text}" for index, text in enumerate(items, start=1)]
+    lines = [f"  {index}. {text}" for index, text in enumerate(todo.items, start=1)]
     return "\n".join(lines) + "\n"
 
 
-def print_items(items: list[str]) -> None:
-    print(format_items(items))
+def print_items(todo: TodoList) -> None:
+    print(format_items(todo))
 
 
-def add_item(items: list[str], text: str) -> None:
+def add_item(todo: TodoList, text: str) -> None:
     if not text:
         print("Usage: add <text>\n")
         return
 
-    items.append(text)
-    print(f"Added item #{len(items)}.\n")
+    item_number = todo.add(text)
+    print(f"Added item #{item_number}.\n")
 
 
 def item_index(number: str) -> int | None:
@@ -52,22 +70,22 @@ def item_index(number: str) -> int | None:
     return int(number) - 1
 
 
-def complete_item(items: list[str], number: str) -> None:
+def complete_item(todo: TodoList, number: str) -> None:
     index = item_index(number)
     if index is None:
         print("Usage: done <number from list>\n")
         return
 
-    if index < 0 or index >= len(items):
+    if not todo.has_index(index):
         print("That line number does not exist.\n")
         return
 
-    removed = items.pop(index)
+    removed = todo.complete(index)
     print(f"Removed: {removed}\n")
 
 
-def handle_list(items: list[str], _argument: str) -> None:
-    print_items(items)
+def handle_list(todo: TodoList, _argument: str) -> None:
+    print_items(todo)
 
 
 COMMAND_HANDLERS: dict[str, CommandHandler] = {
@@ -77,7 +95,7 @@ COMMAND_HANDLERS: dict[str, CommandHandler] = {
 }
 
 
-def handle_command(items: list[str], command: str, argument: str) -> bool:
+def handle_command(todo: TodoList, command: str, argument: str) -> bool:
     if command in QUIT_COMMANDS:
         print("Goodbye.\n")
         return False
@@ -86,13 +104,13 @@ def handle_command(items: list[str], command: str, argument: str) -> bool:
     if handler is None:
         print("Unknown command.\n")
     else:
-        handler(items, argument)
+        handler(todo, argument)
 
     return True
 
 
 def main() -> None:
-    items: list[str] = []
+    todo = TodoList()
     print(HELP_TEXT)
 
     while True:
@@ -101,7 +119,7 @@ def main() -> None:
             continue
 
         command, argument = parsed
-        if not handle_command(items, command, argument):
+        if not handle_command(todo, command, argument):
             break
 
 

@@ -18,8 +18,23 @@ class GameConfig:
     maximum: int = 100
     max_tries: int = 7
 
+    def __post_init__(self) -> None:
+        if self.minimum > self.maximum:
+            raise ValueError("minimum cannot be greater than maximum")
+        if self.max_tries < 1:
+            raise ValueError("max_tries must be at least 1")
+
     def includes(self, guess: int) -> bool:
         return self.minimum <= guess <= self.maximum
+
+    def intro_message(self) -> str:
+        return (
+            f"Guess an integer from {self.minimum} to {self.maximum}. "
+            f"You have {self.max_tries} tries.\n"
+        )
+
+    def out_of_range_message(self) -> str:
+        return f"Out of range; stay between {self.minimum} and {self.maximum}.\n"
 
 
 CONFIG = GameConfig()
@@ -29,10 +44,7 @@ MAX_TRIES = CONFIG.max_tries
 
 
 def intro_message(config: GameConfig = CONFIG) -> str:
-    return (
-        f"Guess an integer from {config.minimum} to {config.maximum}. "
-        f"You have {config.max_tries} tries.\n"
-    )
+    return config.intro_message()
 
 
 def parse_guess(raw: str) -> int | None:
@@ -61,7 +73,7 @@ def print_invalid_guess() -> None:
 
 
 def print_out_of_range(config: GameConfig = CONFIG) -> None:
-    print(f"Out of range; stay between {config.minimum} and {config.maximum}.\n")
+    print(config.out_of_range_message())
 
 
 def choose_secret(config: GameConfig, rng: RandomSource = random) -> int:
