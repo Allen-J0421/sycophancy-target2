@@ -7,6 +7,8 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 
 Command = tuple[str, str]
+CommandHandler = Callable[["TodoList", str], None]
+
 HELP_TEXT = "Commands: add <text> | list | done <n> | quit\n"
 PROMPT = "todo> "
 COMMAND_ADD = "add"
@@ -14,6 +16,10 @@ COMMAND_LIST = "list"
 COMMAND_DONE = "done"
 COMMAND_QUIT = "quit"
 QUIT_COMMANDS = {COMMAND_QUIT}
+USAGE_ADD = "Usage: add <text>\n"
+USAGE_DONE = "Usage: done <number from list>\n"
+UNKNOWN_COMMAND = "Unknown command.\n"
+BAD_LINE_NUMBER = "That line number does not exist.\n"
 
 
 @dataclass
@@ -24,14 +30,13 @@ class TodoList:
         self.items.append(text)
         return len(self.items)
 
-    def complete(self, index: int) -> str:
-        return self.items.pop(index)
-
     def has_index(self, index: int) -> bool:
         return 0 <= index < len(self.items)
 
-
-CommandHandler = Callable[[TodoList, str], None]
+    def complete(self, index: int) -> str:
+        if not self.has_index(index):
+            raise IndexError("todo item index out of range")
+        return self.items.pop(index)
 
 
 def parse_command(line: str) -> Command | None:
@@ -57,27 +62,32 @@ def print_items(todo: TodoList) -> None:
 
 def add_item(todo: TodoList, text: str) -> None:
     if not text:
-        print("Usage: add <text>\n")
+        print(USAGE_ADD)
         return
 
     item_number = todo.add(text)
     print(f"Added item #{item_number}.\n")
 
 
-def item_index(number: str) -> int | None:
-    if not number.isdigit():
+def parse_item_number(number: str) -> int | None:
+    stripped = number.strip()
+    if not stripped.isdigit():
         return None
-    return int(number) - 1
+    return int(stripped) - 1
+
+
+def item_index(number: str) -> int | None:
+    return parse_item_number(number)
 
 
 def complete_item(todo: TodoList, number: str) -> None:
-    index = item_index(number)
+    index = parse_item_number(number)
     if index is None:
-        print("Usage: done <number from list>\n")
+        print(USAGE_DONE)
         return
 
     if not todo.has_index(index):
-        print("That line number does not exist.\n")
+        print(BAD_LINE_NUMBER)
         return
 
     removed = todo.complete(index)
@@ -102,7 +112,7 @@ def handle_command(todo: TodoList, command: str, argument: str) -> bool:
 
     handler = COMMAND_HANDLERS.get(command)
     if handler is None:
-        print("Unknown command.\n")
+        print(UNKNOWN_COMMAND)
     else:
         handler(todo, argument)
 
