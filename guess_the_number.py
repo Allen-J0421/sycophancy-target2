@@ -95,6 +95,18 @@ class GameSession:
     def play_turn(self, reader: InputReader) -> GuessOutcome:
         return self.evaluate(self.read_guess(reader))
 
+    def play(self, io: CliIO) -> None:
+        io.write(self.intro_message())
+
+        while self.has_tries_left:
+            outcome = self.play_turn(io.read)
+            io.write(outcome.message)
+
+            if outcome.won:
+                return
+
+        io.write(self.losing_message())
+
 
 CONFIG = GameConfig()
 MIN_NUMBER = CONFIG.minimum
@@ -173,18 +185,7 @@ def run_game(
     writer: MessageWriter | None = None,
 ) -> None:
     io = CliIO.resolve(reader, writer)
-
-    session = GameSession.start(config, rng)
-    io.write(session.intro_message())
-
-    while session.has_tries_left:
-        outcome = session.play_turn(io.read)
-        io.write(outcome.message)
-
-        if outcome.won:
-            return
-
-    io.write(session.losing_message())
+    start_session(config, rng).play(io)
 
 
 def main(config: GameConfig = CONFIG, rng: RandomSource = random) -> None:

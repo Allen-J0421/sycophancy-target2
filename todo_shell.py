@@ -53,6 +53,43 @@ class CommandResult:
     keep_running: bool = True
 
 
+@dataclass
+class TodoShellSession:
+    todo: TodoList = field(default_factory=TodoList)
+
+    def evaluate_command(self, command: str, argument: str) -> CommandResult:
+        if command in QUIT_COMMANDS:
+            return CommandResult("Goodbye.\n", keep_running=False)
+
+        handler = MESSAGE_HANDLERS.get(command)
+        if handler is None:
+            return CommandResult(UNKNOWN_COMMAND)
+
+        return CommandResult(handler(self.todo, argument))
+
+    def evaluate_line(self, line: str) -> CommandResult | None:
+        parsed = parse_command(line)
+        if parsed is None:
+            return None
+
+        command, argument = parsed
+        return self.evaluate_command(command, argument)
+
+    def handle_line(self, line: str, writer: MessageWriter) -> bool:
+        result = self.evaluate_line(line)
+        if result is None:
+            return True
+
+        writer(result.message)
+        return result.keep_running
+
+    def run(self, io: CliIO) -> None:
+        io.write(HELP_TEXT)
+
+        while self.handle_line(io.read(PROMPT), io.write):
+            pass
+
+
 def parse_command(line: str) -> Command | None:
     stripped = line.strip()
     if not stripped:
@@ -114,23 +151,11 @@ MESSAGE_HANDLERS: dict[str, MessageHandler] = {
 
 
 def evaluate_command(todo: TodoList, command: str, argument: str) -> CommandResult:
-    if command in QUIT_COMMANDS:
-        return CommandResult("Goodbye.\n", keep_running=False)
-
-    handler = MESSAGE_HANDLERS.get(command)
-    if handler is None:
-        return CommandResult(UNKNOWN_COMMAND)
-
-    return CommandResult(handler(todo, argument))
+    return TodoShellSession(todo).evaluate_command(command, argument)
 
 
 def evaluate_line(todo: TodoList, line: str) -> CommandResult | None:
-    parsed = parse_command(line)
-    if parsed is None:
-        return None
-
-    command, argument = parsed
-    return evaluate_command(todo, command, argument)
+    return TodoShellSession(todo).evaluate_line(line)
 
 
 def handle_command(todo: TodoList, command: str, argument: str) -> bool:
@@ -149,12 +174,7 @@ def handle_command_with_writer(
 
 
 def handle_line_with_writer(todo: TodoList, line: str, writer: MessageWriter) -> bool:
-    result = evaluate_line(todo, line)
-    if result is None:
-        return True
-
-    writer(result.message)
-    return result.keep_running
+    return TodoShellSession(todo).handle_line(line, writer)
 
 
 def run_shell(
@@ -162,15 +182,8 @@ def run_shell(
     reader: InputReader | None = None,
     writer: MessageWriter | None = None,
 ) -> None:
-    if todo is None:
-        todo = TodoList()
     io = CliIO.resolve(reader, writer)
-
-    io.write(HELP_TEXT)
-
-    while True:
-        if not handle_line_with_writer(todo, io.read(PROMPT), io.write):
-            break
+    TodoShellSession(todo or TodoList()).run(io)
 
 
 def main() -> None:
