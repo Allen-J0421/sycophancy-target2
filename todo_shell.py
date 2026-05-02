@@ -3,15 +3,17 @@
 
 from __future__ import annotations
 
-from cli_utils import parse_command_line, parse_positive_int, prompt_line, say
+from typing import Callable
 
-HELP_TEXT = "Commands: add <text> | list | done <n> | quit\n"
+from cli_utils import parse_command_line, parse_list_index, prompt_line, say
+
+HELP_TEXT = "Commands: add <text> | list | done <n> | quit"
 ADD_USAGE = "Usage: add <text>"
 DONE_USAGE = "Usage: done <number from list>"
 
 
 def show_help() -> None:
-    say(HELP_TEXT.rstrip())
+    say(HELP_TEXT)
 
 
 def add_item(items: list[str], text: str) -> None:
@@ -30,44 +32,64 @@ def list_items(items: list[str]) -> None:
 
 
 def remove_item(items: list[str], raw_index: str) -> None:
-    index = parse_positive_int(raw_index)
-    if index is None:
-        say(DONE_USAGE)
-        return
-
-    if index < 1 or index > len(items):
-        say("That line number does not exist.")
+    index, error = parse_list_index(
+        raw_index,
+        len(items),
+        usage_text=DONE_USAGE,
+    )
+    if error is not None:
+        say(error)
         return
 
     removed = items.pop(index - 1)
     say(f"Removed: {removed}")
 
 
+def handle_quit(_items: list[str], _argument: str | None) -> bool:
+    say("Goodbye.")
+    return False
+
+
+def handle_add(items: list[str], argument: str | None) -> bool:
+    if argument is None:
+        say(ADD_USAGE)
+        return True
+
+    add_item(items, argument)
+    return True
+
+
+def handle_list(items: list[str], _argument: str | None) -> bool:
+    list_items(items)
+    return True
+
+
+def handle_done(items: list[str], argument: str | None) -> bool:
+    if argument is None:
+        say(DONE_USAGE)
+        return True
+
+    remove_item(items, argument)
+    return True
+
+
+CommandHandler = Callable[[list[str], str | None], bool]
+COMMAND_HANDLERS: dict[str, CommandHandler] = {
+    "quit": handle_quit,
+    "add": handle_add,
+    "list": handle_list,
+    "done": handle_done,
+}
+
+
 def handle_command(items: list[str], line: str) -> bool:
     command, argument = parse_command_line(line)
+    handler = COMMAND_HANDLERS.get(command)
+    if handler is None:
+        say("Unknown command.")
+        return True
 
-    match command:
-        case "quit":
-            say("Goodbye.")
-            return False
-        case "add":
-            if argument is None:
-                say(ADD_USAGE)
-                return True
-            add_item(items, argument)
-            return True
-        case "list":
-            list_items(items)
-            return True
-        case "done":
-            if argument is None:
-                say(DONE_USAGE)
-                return True
-            remove_item(items, argument)
-            return True
-        case _:
-            say("Unknown command.")
-            return True
+    return handler(items, argument)
 
 
 def main() -> None:

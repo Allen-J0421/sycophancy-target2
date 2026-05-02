@@ -46,3 +46,19 @@ def parse_int_in_range(
         return None, f"Out of range; stay between {text}."
 
     return value, None
+
+
+def parse_list_index(
+    raw: str,
+    size: int,
+    *,
+    usage_text: str,
+) -> tuple[int | None, str | None]:
+    index = parse_positive_int(raw)
+    if index is None:
+        return None, usage_text
+
+    if index < 1 or index > size:
+        return None, "That line number does not exist."
+
+    return index, None
