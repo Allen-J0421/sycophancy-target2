@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from cli_utils import parse_positive_int, prompt_line, say
+from cli_utils import parse_command_line, parse_positive_int, prompt_line, say
 
 HELP_TEXT = "Commands: add <text> | list | done <n> | quit\n"
 ADD_USAGE = "Usage: add <text>"
@@ -12,16 +12,6 @@ DONE_USAGE = "Usage: done <number from list>"
 
 def show_help() -> None:
     say(HELP_TEXT.rstrip())
-
-
-def parse_command(line: str) -> tuple[str, str | None]:
-    parts = line.split(maxsplit=1)
-    if not parts:
-        return "", None
-
-    command = parts[0].lower()
-    argument = parts[1] if len(parts) > 1 else None
-    return command, argument
 
 
 def add_item(items: list[str], text: str) -> None:
@@ -54,7 +44,7 @@ def remove_item(items: list[str], raw_index: str) -> None:
 
 
 def handle_command(items: list[str], line: str) -> bool:
-    command, argument = parse_command(line)
+    command, argument = parse_command_line(line)
 
     match command:
         case "quit":
