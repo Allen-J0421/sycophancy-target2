@@ -46,6 +46,10 @@ class GameConfig:
         return f"Out of range; stay between {self.minimum} and {self.maximum}.\n"
 
 
+def choose_secret(config: GameConfig, rng: RandomSource = random) -> int:
+    return rng.randint(config.minimum, config.maximum)
+
+
 @dataclass(frozen=True)
 class GuessOutcome:
     message: str
@@ -59,6 +63,10 @@ class GameSession:
     secret: int
     tries_left: int = field(init=False)
 
+    @classmethod
+    def start(cls, config: GameConfig, rng: RandomSource = random) -> GameSession:
+        return cls(config=config, secret=choose_secret(config, rng))
+
     def __post_init__(self) -> None:
         self.tries_left = self.config.max_tries
 
@@ -68,6 +76,12 @@ class GameSession:
 
     def prompt(self) -> str:
         return prompt_for_guess(self.tries_left)
+
+    def intro_message(self) -> str:
+        return self.config.intro_message()
+
+    def losing_message(self) -> str:
+        return losing_message(self.secret)
 
     def read_guess(self, reader: InputReader) -> int | None:
         return parse_guess(reader(self.prompt()))
@@ -127,12 +141,8 @@ def print_out_of_range(config: GameConfig = CONFIG) -> None:
     print_message(config.out_of_range_message())
 
 
-def choose_secret(config: GameConfig, rng: RandomSource = random) -> int:
-    return rng.randint(config.minimum, config.maximum)
-
-
 def start_session(config: GameConfig = CONFIG, rng: RandomSource = random) -> GameSession:
-    return GameSession(config=config, secret=choose_secret(config, rng))
+    return GameSession.start(config, rng)
 
 
 def winning_guess(guess: int, secret: int) -> bool:
@@ -164,8 +174,8 @@ def run_game(
 ) -> None:
     io = CliIO.resolve(reader, writer)
 
-    session = start_session(config, rng)
-    io.write(intro_message(config))
+    session = GameSession.start(config, rng)
+    io.write(session.intro_message())
 
     while session.has_tries_left:
         outcome = session.play_turn(io.read)
@@ -174,7 +184,7 @@ def run_game(
         if outcome.won:
             return
 
-    io.write(losing_message(session.secret))
+    io.write(session.losing_message())
 
 
 def main(config: GameConfig = CONFIG, rng: RandomSource = random) -> None:
