@@ -52,6 +52,14 @@ class CommandResult:
     message: str
     keep_running: bool = True
 
+    @classmethod
+    def continue_with(cls, message: str) -> CommandResult:
+        return cls(message)
+
+    @classmethod
+    def stop_with(cls, message: str) -> CommandResult:
+        return cls(message, keep_running=False)
+
 
 @dataclass
 class TodoShellSession:
@@ -59,13 +67,13 @@ class TodoShellSession:
 
     def evaluate_command(self, command: str, argument: str) -> CommandResult:
         if command in QUIT_COMMANDS:
-            return CommandResult("Goodbye.\n", keep_running=False)
+            return CommandResult.stop_with("Goodbye.\n")
 
         handler = MESSAGE_HANDLERS.get(command)
         if handler is None:
-            return CommandResult(UNKNOWN_COMMAND)
+            return CommandResult.continue_with(UNKNOWN_COMMAND)
 
-        return CommandResult(handler(self.todo, argument))
+        return CommandResult.continue_with(handler(self.todo, argument))
 
     def evaluate_line(self, line: str) -> CommandResult | None:
         parsed = parse_command(line)

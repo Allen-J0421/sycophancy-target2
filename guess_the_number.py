@@ -56,6 +56,18 @@ class GuessOutcome:
     uses_try: bool = False
     won: bool = False
 
+    @classmethod
+    def invalid(cls, message: str) -> GuessOutcome:
+        return cls(message)
+
+    @classmethod
+    def retry(cls, message: str) -> GuessOutcome:
+        return cls(message, uses_try=True)
+
+    @classmethod
+    def win(cls) -> GuessOutcome:
+        return cls(WIN_MESSAGE, won=True)
+
 
 @dataclass
 class GameSession:
@@ -167,15 +179,15 @@ def losing_message(secret: int) -> str:
 
 def evaluate_guess(guess: int | None, secret: int, config: GameConfig = CONFIG) -> GuessOutcome:
     if guess is None:
-        return GuessOutcome(INVALID_GUESS_MESSAGE)
+        return GuessOutcome.invalid(INVALID_GUESS_MESSAGE)
 
     if not is_in_range(guess, config):
-        return GuessOutcome(config.out_of_range_message())
+        return GuessOutcome.invalid(config.out_of_range_message())
 
     if winning_guess(guess, secret):
-        return GuessOutcome(WIN_MESSAGE, won=True)
+        return GuessOutcome.win()
 
-    return GuessOutcome(f"{hint_for_guess(guess, secret)}\n", uses_try=True)
+    return GuessOutcome.retry(f"{hint_for_guess(guess, secret)}\n")
 
 
 def run_game(
