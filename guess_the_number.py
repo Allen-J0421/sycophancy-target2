@@ -3,6 +3,8 @@
 
 import random
 
+from cli_utils import parse_positive_int, prompt_line, say
+
 
 MIN_NUMBER = 1
 MAX_NUMBER = 100
@@ -10,16 +12,11 @@ MAX_TRIES = 7
 RANGE_TEXT = f"{MIN_NUMBER} to {MAX_NUMBER}"
 
 
-def say(message: str) -> None:
-    print(message)
-    print()
-
-
 def parse_guess(raw: str) -> tuple[int | None, str | None]:
-    if not raw.isdigit():
+    guess = parse_positive_int(raw)
+    if guess is None:
         return None, "Please enter a positive whole number."
 
-    guess = int(raw)
     if guess < MIN_NUMBER or guess > MAX_NUMBER:
         return None, f"Out of range; stay between {RANGE_TEXT}."
 
@@ -27,7 +24,7 @@ def parse_guess(raw: str) -> tuple[int | None, str | None]:
 
 
 def prompt_guess(tries_left: int) -> int | None:
-    raw = input(f"Tries left: {tries_left}. Your guess: ").strip()
+    raw = prompt_line(f"Tries left: {tries_left}. Your guess: ")
     guess, error = parse_guess(raw)
     if error is not None:
         say(error)

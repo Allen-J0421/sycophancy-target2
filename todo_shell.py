@@ -3,15 +3,11 @@
 
 from __future__ import annotations
 
+from cli_utils import parse_positive_int, prompt_line, say
 
 HELP_TEXT = "Commands: add <text> | list | done <n> | quit\n"
 ADD_USAGE = "Usage: add <text>"
 DONE_USAGE = "Usage: done <number from list>"
-
-
-def say(message: str) -> None:
-    print(message)
-    print()
 
 
 def show_help() -> None:
@@ -44,11 +40,11 @@ def list_items(items: list[str]) -> None:
 
 
 def remove_item(items: list[str], raw_index: str) -> None:
-    if not raw_index.isdigit():
+    index = parse_positive_int(raw_index)
+    if index is None:
         say(DONE_USAGE)
         return
 
-    index = int(raw_index)
     if index < 1 or index > len(items):
         say("That line number does not exist.")
         return
@@ -89,7 +85,7 @@ def main() -> None:
     show_help()
 
     while True:
-        line = input("todo> ").strip()
+        line = prompt_line("todo> ")
         if not line:
             continue
 
