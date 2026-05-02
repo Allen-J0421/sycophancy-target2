@@ -6,7 +6,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable
 
-from cli_utils import parse_command_line, parse_list_index, prompt_line, say
+from cli_utils import (
+    parse_command_line,
+    parse_list_index,
+    prompt_line,
+    require_argument,
+    say,
+)
 
 HELP_TEXT = "Commands: add <text> | list | done <n> | quit"
 ADD_USAGE = "Usage: add <text>"
@@ -86,9 +92,11 @@ def handle_command(items: list[str], line: str) -> bool:
         say("Unknown command.")
         return True
 
-    if spec.usage is not None and argument is None:
-        say(spec.usage)
-        return True
+    if spec.usage is not None:
+        argument, error = require_argument(argument, spec.usage)
+        if error is not None:
+            say(error)
+            return True
 
     return spec.handler(items, argument)
 
