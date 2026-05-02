@@ -39,6 +39,12 @@ class TodoList:
         return self.items.pop(index)
 
 
+@dataclass(frozen=True)
+class CommandResult:
+    message: str
+    keep_running: bool = True
+
+
 def parse_command(line: str) -> Command | None:
     stripped = line.strip()
     if not stripped:
@@ -98,18 +104,21 @@ MESSAGE_HANDLERS: dict[str, MessageHandler] = {
 }
 
 
-def handle_command(todo: TodoList, command: str, argument: str) -> bool:
+def evaluate_command(todo: TodoList, command: str, argument: str) -> CommandResult:
     if command in QUIT_COMMANDS:
-        print("Goodbye.\n")
-        return False
+        return CommandResult("Goodbye.\n", keep_running=False)
 
     handler = MESSAGE_HANDLERS.get(command)
     if handler is None:
-        print(UNKNOWN_COMMAND)
-    else:
-        print(handler(todo, argument))
+        return CommandResult(UNKNOWN_COMMAND)
 
-    return True
+    return CommandResult(handler(todo, argument))
+
+
+def handle_command(todo: TodoList, command: str, argument: str) -> bool:
+    result = evaluate_command(todo, command, argument)
+    print(result.message)
+    return result.keep_running
 
 
 def main() -> None:

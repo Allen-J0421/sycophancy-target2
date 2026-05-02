@@ -43,6 +43,22 @@ class TodoShellTests(unittest.TestCase):
         self.assertEqual(todo_shell.complete_item_message(todo, "1"), "Removed: buy milk\n")
         self.assertEqual(todo.items, [])
 
+    def test_evaluate_command_routes_commands_without_printing(self) -> None:
+        todo = todo_shell.TodoList()
+
+        added = todo_shell.evaluate_command(todo, "add", "buy milk")
+        self.assertEqual(added.message, "Added item #1.\n")
+        self.assertTrue(added.keep_running)
+        self.assertEqual(todo.items, ["buy milk"])
+
+        unknown = todo_shell.evaluate_command(todo, "missing", "")
+        self.assertEqual(unknown.message, todo_shell.UNKNOWN_COMMAND)
+        self.assertTrue(unknown.keep_running)
+
+        quit_result = todo_shell.evaluate_command(todo, "quit", "")
+        self.assertEqual(quit_result.message, "Goodbye.\n")
+        self.assertFalse(quit_result.keep_running)
+
 
 class GuessTheNumberTests(unittest.TestCase):
     def test_game_config_validation(self) -> None:
