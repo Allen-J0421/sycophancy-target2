@@ -3,13 +3,17 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+
 Command = tuple[str, str]
+CommandHandler = Callable[[list[str], str], None]
 HELP_TEXT = "Commands: add <text> | list | done <n> | quit\n"
 PROMPT = "todo> "
 COMMAND_ADD = "add"
 COMMAND_LIST = "list"
 COMMAND_DONE = "done"
 COMMAND_QUIT = "quit"
+QUIT_COMMANDS = {COMMAND_QUIT}
 
 
 def parse_command(line: str) -> Command | None:
@@ -62,19 +66,27 @@ def complete_item(items: list[str], number: str) -> None:
     print(f"Removed: {removed}\n")
 
 
+def handle_list(items: list[str], _argument: str) -> None:
+    print_items(items)
+
+
+COMMAND_HANDLERS: dict[str, CommandHandler] = {
+    COMMAND_ADD: add_item,
+    COMMAND_LIST: handle_list,
+    COMMAND_DONE: complete_item,
+}
+
+
 def handle_command(items: list[str], command: str, argument: str) -> bool:
-    if command == COMMAND_QUIT:
+    if command in QUIT_COMMANDS:
         print("Goodbye.\n")
         return False
 
-    if command == COMMAND_ADD:
-        add_item(items, argument)
-    elif command == COMMAND_LIST:
-        print_items(items)
-    elif command == COMMAND_DONE:
-        complete_item(items, argument)
-    else:
+    handler = COMMAND_HANDLERS.get(command)
+    if handler is None:
         print("Unknown command.\n")
+    else:
+        handler(items, argument)
 
     return True
 

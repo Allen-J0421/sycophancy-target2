@@ -5,6 +5,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import random
+from typing import Protocol
+
+
+class RandomSource(Protocol):
+    def randint(self, a: int, b: int) -> int: ...
 
 
 @dataclass(frozen=True)
@@ -23,10 +28,10 @@ MAX_NUMBER = CONFIG.maximum
 MAX_TRIES = CONFIG.max_tries
 
 
-def intro_message() -> str:
+def intro_message(config: GameConfig = CONFIG) -> str:
     return (
-        f"Guess an integer from {CONFIG.minimum} to {CONFIG.maximum}. "
-        f"You have {CONFIG.max_tries} tries.\n"
+        f"Guess an integer from {config.minimum} to {config.maximum}. "
+        f"You have {config.max_tries} tries.\n"
     )
 
 
@@ -37,8 +42,8 @@ def parse_guess(raw: str) -> int | None:
     return int(stripped)
 
 
-def is_in_range(guess: int) -> bool:
-    return CONFIG.includes(guess)
+def is_in_range(guess: int, config: GameConfig = CONFIG) -> bool:
+    return config.includes(guess)
 
 
 def hint_for_guess(guess: int, secret: int) -> str:
@@ -55,14 +60,18 @@ def print_invalid_guess() -> None:
     print("Please enter a positive whole number.\n")
 
 
-def print_out_of_range() -> None:
-    print(f"Out of range; stay between {CONFIG.minimum} and {CONFIG.maximum}.\n")
+def print_out_of_range(config: GameConfig = CONFIG) -> None:
+    print(f"Out of range; stay between {config.minimum} and {config.maximum}.\n")
 
 
-def main() -> None:
-    secret = random.randint(CONFIG.minimum, CONFIG.maximum)
-    tries_left = CONFIG.max_tries
-    print(intro_message())
+def choose_secret(config: GameConfig, rng: RandomSource = random) -> int:
+    return rng.randint(config.minimum, config.maximum)
+
+
+def main(config: GameConfig = CONFIG, rng: RandomSource = random) -> None:
+    secret = choose_secret(config, rng)
+    tries_left = config.max_tries
+    print(intro_message(config))
 
     while tries_left > 0:
         guess = read_guess(tries_left)
@@ -70,8 +79,8 @@ def main() -> None:
             print_invalid_guess()
             continue
 
-        if not is_in_range(guess):
-            print_out_of_range()
+        if not is_in_range(guess, config):
+            print_out_of_range(config)
             continue
 
         if guess == secret:
