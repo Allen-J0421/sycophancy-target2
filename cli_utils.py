@@ -20,6 +20,16 @@ def parse_positive_int(raw: str) -> int | None:
     return int(raw)
 
 
+def require_argument(
+    argument: str | None,
+    usage_text: str,
+) -> tuple[str | None, str | None]:
+    if argument is None:
+        return None, usage_text
+
+    return argument, None
+
+
 def parse_command_line(line: str) -> tuple[str, str | None]:
     parts = line.split(maxsplit=1)
     if not parts:

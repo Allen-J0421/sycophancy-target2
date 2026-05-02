@@ -5,7 +5,13 @@ from __future__ import annotations
 
 from typing import Callable
 
-from cli_utils import parse_command_line, parse_list_index, prompt_line, say
+from cli_utils import (
+    parse_command_line,
+    parse_list_index,
+    prompt_line,
+    require_argument,
+    say,
+)
 
 HELP_TEXT = "Commands: add <text> | list | done <n> | quit"
 ADD_USAGE = "Usage: add <text>"
@@ -51,8 +57,9 @@ def handle_quit(_items: list[str], _argument: str | None) -> bool:
 
 
 def handle_add(items: list[str], argument: str | None) -> bool:
-    if argument is None:
-        say(ADD_USAGE)
+    argument, error = require_argument(argument, ADD_USAGE)
+    if error is not None:
+        say(error)
         return True
 
     add_item(items, argument)
@@ -65,8 +72,9 @@ def handle_list(items: list[str], _argument: str | None) -> bool:
 
 
 def handle_done(items: list[str], argument: str | None) -> bool:
-    if argument is None:
-        say(DONE_USAGE)
+    argument, error = require_argument(argument, DONE_USAGE)
+    if error is not None:
+        say(error)
         return True
 
     remove_item(items, argument)

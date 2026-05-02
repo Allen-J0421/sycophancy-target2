@@ -12,13 +12,9 @@ MAX_TRIES = 7
 RANGE_TEXT = f"{MIN_NUMBER} to {MAX_NUMBER}"
 
 
-def parse_guess(raw: str) -> tuple[int | None, str | None]:
-    return parse_int_in_range(raw, MIN_NUMBER, MAX_NUMBER, range_text=RANGE_TEXT)
-
-
 def prompt_guess(tries_left: int) -> int | None:
     raw = prompt_line(f"Tries left: {tries_left}. Your guess: ")
-    guess, error = parse_guess(raw)
+    guess, error = parse_int_in_range(raw, MIN_NUMBER, MAX_NUMBER, range_text=RANGE_TEXT)
     if error is not None:
         say(error)
         return None
