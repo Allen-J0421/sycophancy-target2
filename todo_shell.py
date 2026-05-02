@@ -6,12 +6,17 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass, field
 
+from cli_io import (
+    InputReader,
+    MessageWriter,
+    print_message,
+    resolve_reader,
+    resolve_writer,
+)
 from input_parsing import parse_positive_int
 
 Command = tuple[str, str]
 MessageHandler = Callable[["TodoList", str], str]
-InputReader = Callable[[str], str]
-MessageWriter = Callable[[str], None]
 
 HELP_TEXT = "Commands: add <text> | list | done <n> | quit\n"
 PROMPT = "todo> "
@@ -119,10 +124,6 @@ def evaluate_command(todo: TodoList, command: str, argument: str) -> CommandResu
     return CommandResult(handler(todo, argument))
 
 
-def print_message(message: str) -> None:
-    print(message, end="")
-
-
 def handle_command(todo: TodoList, command: str, argument: str) -> bool:
     result = evaluate_command(todo, command, argument)
     print_message(result.message)
@@ -136,10 +137,8 @@ def run_shell(
 ) -> None:
     if todo is None:
         todo = TodoList()
-    if reader is None:
-        reader = input
-    if writer is None:
-        writer = print_message
+    reader = resolve_reader(reader)
+    writer = resolve_writer(writer)
 
     writer(HELP_TEXT)
 

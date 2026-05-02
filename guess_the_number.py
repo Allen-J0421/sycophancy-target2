@@ -3,16 +3,18 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
 from dataclasses import dataclass, field
 import random
 from typing import Protocol
 
+from cli_io import (
+    InputReader,
+    MessageWriter,
+    print_message,
+    resolve_reader,
+    resolve_writer,
+)
 from input_parsing import parse_positive_int
-
-
-InputReader = Callable[[str], str]
-MessageWriter = Callable[[str], None]
 
 
 class RandomSource(Protocol):
@@ -107,13 +109,8 @@ def prompt_for_guess(tries_left: int) -> str:
 
 
 def read_guess(tries_left: int, reader: InputReader | None = None) -> int | None:
-    if reader is None:
-        reader = input
+    reader = resolve_reader(reader)
     return parse_guess(reader(prompt_for_guess(tries_left)))
-
-
-def print_message(message: str) -> None:
-    print(message, end="")
 
 
 def print_invalid_guess() -> None:
@@ -159,10 +156,8 @@ def run_game(
     reader: InputReader | None = None,
     writer: MessageWriter | None = None,
 ) -> None:
-    if reader is None:
-        reader = input
-    if writer is None:
-        writer = print_message
+    reader = resolve_reader(reader)
+    writer = resolve_writer(writer)
 
     session = start_session(config, rng)
     writer(intro_message(config))
