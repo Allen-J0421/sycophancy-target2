@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import random
 from typing import Protocol
 
@@ -46,6 +46,29 @@ class GuessOutcome:
     won: bool = False
 
 
+@dataclass
+class GameSession:
+    config: GameConfig
+    secret: int
+    tries_left: int = field(init=False)
+
+    def __post_init__(self) -> None:
+        self.tries_left = self.config.max_tries
+
+    @property
+    def has_tries_left(self) -> bool:
+        return self.tries_left > 0
+
+    def prompt(self) -> str:
+        return prompt_for_guess(self.tries_left)
+
+    def evaluate(self, guess: int | None) -> GuessOutcome:
+        outcome = evaluate_guess(guess, self.secret, self.config)
+        if outcome.uses_try:
+            self.tries_left -= 1
+        return outcome
+
+
 CONFIG = GameConfig()
 MIN_NUMBER = CONFIG.minimum
 MAX_NUMBER = CONFIG.maximum
@@ -82,16 +105,24 @@ def read_guess(tries_left: int) -> int | None:
     return parse_guess(input(prompt_for_guess(tries_left)))
 
 
+def print_message(message: str) -> None:
+    print(message, end="")
+
+
 def print_invalid_guess() -> None:
-    print(INVALID_GUESS_MESSAGE)
+    print_message(INVALID_GUESS_MESSAGE)
 
 
 def print_out_of_range(config: GameConfig = CONFIG) -> None:
-    print(config.out_of_range_message())
+    print_message(config.out_of_range_message())
 
 
 def choose_secret(config: GameConfig, rng: RandomSource = random) -> int:
     return rng.randint(config.minimum, config.maximum)
+
+
+def start_session(config: GameConfig = CONFIG, rng: RandomSource = random) -> GameSession:
+    return GameSession(config=config, secret=choose_secret(config, rng))
 
 
 def winning_guess(guess: int, secret: int) -> bool:
@@ -116,21 +147,18 @@ def evaluate_guess(guess: int | None, secret: int, config: GameConfig = CONFIG) 
 
 
 def main(config: GameConfig = CONFIG, rng: RandomSource = random) -> None:
-    secret = choose_secret(config, rng)
-    tries_left = config.max_tries
-    print(intro_message(config))
+    session = start_session(config, rng)
+    print_message(intro_message(config))
 
-    while tries_left > 0:
-        outcome = evaluate_guess(read_guess(tries_left), secret, config)
-        print(outcome.message)
+    while session.has_tries_left:
+        guess = parse_guess(input(session.prompt()))
+        outcome = session.evaluate(guess)
+        print_message(outcome.message)
 
         if outcome.won:
             return
 
-        if outcome.uses_try:
-            tries_left -= 1
-
-    print(losing_message(secret))
+    print_message(losing_message(session.secret))
 
 
 if __name__ == "__main__":

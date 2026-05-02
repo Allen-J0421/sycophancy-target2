@@ -117,15 +117,19 @@ def evaluate_command(todo: TodoList, command: str, argument: str) -> CommandResu
     return CommandResult(handler(todo, argument))
 
 
+def print_message(message: str) -> None:
+    print(message, end="")
+
+
 def handle_command(todo: TodoList, command: str, argument: str) -> bool:
     result = evaluate_command(todo, command, argument)
-    print(result.message)
+    print_message(result.message)
     return result.keep_running
 
 
 def main() -> None:
     todo = TodoList()
-    print(HELP_TEXT)
+    print_message(HELP_TEXT)
 
     while True:
         parsed = parse_command(input(PROMPT))
