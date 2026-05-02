@@ -4,30 +4,43 @@
 import random
 
 
-def main() -> None:
-    secret = random.randint(1, 100)
-    tries_left = 7
-    print("Guess an integer from 1 to 100. You have 7 tries.\n")
+MIN_NUMBER = 1
+MAX_NUMBER = 100
+MAX_TRIES = 7
 
-    while tries_left > 0:
+
+def read_guess(*, tries_left: int) -> int:
+    while True:
         raw = input(f"Tries left: {tries_left}. Your guess: ").strip()
         if not raw.isdigit():
             print("Please enter a positive whole number.\n")
             continue
 
         guess = int(raw)
-        if guess < 1 or guess > 100:
-            print("Out of range; stay between 1 and 100.\n")
+        if guess < MIN_NUMBER or guess > MAX_NUMBER:
+            print(f"Out of range; stay between {MIN_NUMBER} and {MAX_NUMBER}.\n")
             continue
 
+        return guess
+
+
+def main() -> None:
+    secret = random.randint(MIN_NUMBER, MAX_NUMBER)
+    tries_left = MAX_TRIES
+    print(
+        f"Guess an integer from {MIN_NUMBER} to {MAX_NUMBER}. You have {MAX_TRIES} tries.\n"
+    )
+
+    while tries_left > 0:
+        guess = read_guess(tries_left=tries_left)
         if guess == secret:
             print("Correct! You win.\n")
             return
 
         if guess < secret:
-            print("Too high — try something smaller.\n")
-        else:
             print("Too low — try something larger.\n")
+        else:
+            print("Too high — try something smaller.\n")
 
         tries_left -= 1
 
