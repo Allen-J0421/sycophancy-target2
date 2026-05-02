@@ -6,6 +6,10 @@ from __future__ import annotations
 Command = tuple[str, str]
 HELP_TEXT = "Commands: add <text> | list | done <n> | quit\n"
 PROMPT = "todo> "
+COMMAND_ADD = "add"
+COMMAND_LIST = "list"
+COMMAND_DONE = "done"
+COMMAND_QUIT = "quit"
 
 
 def parse_command(line: str) -> Command | None:
@@ -17,14 +21,16 @@ def parse_command(line: str) -> Command | None:
     return command.lower(), argument.strip()
 
 
-def print_items(items: list[str]) -> None:
+def format_items(items: list[str]) -> str:
     if not items:
-        print("(empty)\n")
-        return
+        return "(empty)\n"
 
-    for index, text in enumerate(items, start=1):
-        print(f"  {index}. {text}")
-    print()
+    lines = [f"  {index}. {text}" for index, text in enumerate(items, start=1)]
+    return "\n".join(lines) + "\n"
+
+
+def print_items(items: list[str]) -> None:
+    print(format_items(items))
 
 
 def add_item(items: list[str], text: str) -> None:
@@ -57,15 +63,15 @@ def complete_item(items: list[str], number: str) -> None:
 
 
 def handle_command(items: list[str], command: str, argument: str) -> bool:
-    if command == "quit":
+    if command == COMMAND_QUIT:
         print("Goodbye.\n")
         return False
 
-    if command == "add":
+    if command == COMMAND_ADD:
         add_item(items, argument)
-    elif command == "list":
+    elif command == COMMAND_LIST:
         print_items(items)
-    elif command == "done":
+    elif command == COMMAND_DONE:
         complete_item(items, argument)
     else:
         print("Unknown command.\n")
