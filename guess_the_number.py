@@ -69,6 +69,9 @@ class GameSession:
     def prompt(self) -> str:
         return prompt_for_guess(self.tries_left)
 
+    def read_guess(self, reader: InputReader) -> int | None:
+        return parse_guess(reader(self.prompt()))
+
     def evaluate(self, guess: int | None) -> GuessOutcome:
         outcome = evaluate_guess(guess, self.secret, self.config)
         if outcome.uses_try:
@@ -163,7 +166,7 @@ def run_game(
     writer(intro_message(config))
 
     while session.has_tries_left:
-        guess = parse_guess(reader(session.prompt()))
+        guess = session.read_guess(reader)
         outcome = session.evaluate(guess)
         writer(outcome.message)
 

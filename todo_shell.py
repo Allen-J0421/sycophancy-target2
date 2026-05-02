@@ -87,6 +87,7 @@ def parse_item_number(number: str) -> int | None:
 
 
 def item_index(number: str) -> int | None:
+    """Backward-compatible alias for parse_item_number."""
     return parse_item_number(number)
 
 
@@ -125,8 +126,17 @@ def evaluate_command(todo: TodoList, command: str, argument: str) -> CommandResu
 
 
 def handle_command(todo: TodoList, command: str, argument: str) -> bool:
+    return handle_command_with_writer(todo, command, argument, print_message)
+
+
+def handle_command_with_writer(
+    todo: TodoList,
+    command: str,
+    argument: str,
+    writer: MessageWriter,
+) -> bool:
     result = evaluate_command(todo, command, argument)
-    print_message(result.message)
+    writer(result.message)
     return result.keep_running
 
 
@@ -148,9 +158,7 @@ def run_shell(
             continue
 
         command, argument = parsed
-        result = evaluate_command(todo, command, argument)
-        writer(result.message)
-        if not result.keep_running:
+        if not handle_command_with_writer(todo, command, argument, writer):
             break
 
 
