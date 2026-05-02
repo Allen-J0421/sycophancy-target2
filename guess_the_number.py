@@ -78,6 +78,9 @@ class GameSession:
             self.tries_left -= 1
         return outcome
 
+    def play_turn(self, reader: InputReader) -> GuessOutcome:
+        return self.evaluate(self.read_guess(reader))
+
 
 CONFIG = GameConfig()
 MIN_NUMBER = CONFIG.minimum
@@ -165,8 +168,7 @@ def run_game(
     io.write(intro_message(config))
 
     while session.has_tries_left:
-        guess = session.read_guess(io.read)
-        outcome = session.evaluate(guess)
+        outcome = session.play_turn(io.read)
         io.write(outcome.message)
 
         if outcome.won:

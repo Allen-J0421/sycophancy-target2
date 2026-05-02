@@ -74,6 +74,16 @@ class TodoShellTests(unittest.TestCase):
         self.assertEqual(quit_result.message, "Goodbye.\n")
         self.assertFalse(quit_result.keep_running)
 
+    def test_evaluate_line_handles_blank_input_and_routes_commands(self) -> None:
+        todo = todo_shell.TodoList()
+
+        self.assertIsNone(todo_shell.evaluate_line(todo, "   "))
+
+        result = todo_shell.evaluate_line(todo, "add buy milk")
+        self.assertIsNotNone(result)
+        self.assertEqual(result.message, "Added item #1.\n")
+        self.assertEqual(todo.items, ["buy milk"])
+
     def test_run_shell_accepts_injected_io(self) -> None:
         commands = iter(["add buy milk", "list", "done 1", "quit"])
         prompts: list[str] = []

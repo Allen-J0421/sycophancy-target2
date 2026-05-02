@@ -124,6 +124,15 @@ def evaluate_command(todo: TodoList, command: str, argument: str) -> CommandResu
     return CommandResult(handler(todo, argument))
 
 
+def evaluate_line(todo: TodoList, line: str) -> CommandResult | None:
+    parsed = parse_command(line)
+    if parsed is None:
+        return None
+
+    command, argument = parsed
+    return evaluate_command(todo, command, argument)
+
+
 def handle_command(todo: TodoList, command: str, argument: str) -> bool:
     return handle_command_with_writer(todo, command, argument, print_message)
 
@@ -135,6 +144,15 @@ def handle_command_with_writer(
     writer: MessageWriter,
 ) -> bool:
     result = evaluate_command(todo, command, argument)
+    writer(result.message)
+    return result.keep_running
+
+
+def handle_line_with_writer(todo: TodoList, line: str, writer: MessageWriter) -> bool:
+    result = evaluate_line(todo, line)
+    if result is None:
+        return True
+
     writer(result.message)
     return result.keep_running
 
@@ -151,12 +169,7 @@ def run_shell(
     io.write(HELP_TEXT)
 
     while True:
-        parsed = parse_command(io.read(PROMPT))
-        if parsed is None:
-            continue
-
-        command, argument = parsed
-        if not handle_command_with_writer(todo, command, argument, io.write):
+        if not handle_line_with_writer(todo, io.read(PROMPT), io.write):
             break
 
 
