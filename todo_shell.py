@@ -27,6 +27,14 @@ class CommandSpec:
     usage: str | None = None
     requires_argument: bool = False
 
+    def run(self, items: list[str], argument: str | None) -> bool:
+        if self.requires_argument and argument is None:
+            assert self.usage is not None
+            say(self.usage)
+            return True
+
+        return self.handler(items, argument or "")
+
 
 def handle_add(items: list[str], argument: str) -> bool:
     items.append(argument)
@@ -78,19 +86,6 @@ COMMANDS: dict[str, CommandSpec] = {
 }
 
 
-def execute_command(
-    items: list[str],
-    spec: CommandSpec,
-    argument: str | None,
-) -> bool:
-    if spec.requires_argument and argument is None:
-        assert spec.usage is not None
-        say(spec.usage)
-        return True
-
-    return spec.handler(items, argument or "")
-
-
 def handle_command(items: list[str], line: str) -> bool:
     command, argument = parse_command_line(line)
 
@@ -99,7 +94,7 @@ def handle_command(items: list[str], line: str) -> bool:
         say("Unknown command.")
         return True
 
-    return execute_command(items, spec, argument)
+    return spec.run(items, argument)
 
 
 def run_shell(items: list[str]) -> None:

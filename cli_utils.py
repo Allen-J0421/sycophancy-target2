@@ -76,6 +76,26 @@ def parse_int_in_range(
     )
 
 
+def prompt_int_in_range(
+    prompt: str,
+    minimum: int,
+    maximum: int,
+    *,
+    range_text: str | None = None,
+) -> int | None:
+    value, error = parse_int_in_range(
+        prompt_line(prompt),
+        minimum,
+        maximum,
+        range_text=range_text,
+    )
+    if error is not None:
+        say(error)
+        return None
+
+    return value
+
+
 def parse_list_index(
     raw: str,
     size: int,

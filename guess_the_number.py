@@ -3,7 +3,7 @@
 
 import random
 
-from cli_utils import parse_int_in_range, prompt_line, say
+from cli_utils import prompt_int_in_range, say
 
 
 MIN_NUMBER = 1
@@ -13,17 +13,12 @@ RANGE_TEXT = f"{MIN_NUMBER} to {MAX_NUMBER}"
 
 
 def prompt_guess(tries_left: int) -> int | None:
-    guess, error = parse_int_in_range(
-        prompt_line(f"Tries left: {tries_left}. Your guess: "),
+    return prompt_int_in_range(
+        f"Tries left: {tries_left}. Your guess: ",
         MIN_NUMBER,
         MAX_NUMBER,
         range_text=RANGE_TEXT,
     )
-    if error is not None:
-        say(error)
-        return None
-
-    return guess
 
 
 def guess_feedback(guess: int, secret: int) -> str:
