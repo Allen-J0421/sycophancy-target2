@@ -7,7 +7,6 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 
 Command = tuple[str, str]
-CommandHandler = Callable[["TodoList", str], None]
 MessageHandler = Callable[["TodoList", str], str]
 
 HELP_TEXT = "Commands: add <text> | list | done <n> | quit\n"
@@ -57,20 +56,12 @@ def format_items(todo: TodoList) -> str:
     return "\n".join(lines) + "\n"
 
 
-def print_items(todo: TodoList) -> None:
-    print(format_items(todo))
-
-
 def add_item_message(todo: TodoList, text: str) -> str:
     if not text:
         return USAGE_ADD
 
     item_number = todo.add(text)
     return f"Added item #{item_number}.\n"
-
-
-def add_item(todo: TodoList, text: str) -> None:
-    print(add_item_message(todo, text))
 
 
 def parse_item_number(number: str) -> int | None:
@@ -96,23 +87,10 @@ def complete_item_message(todo: TodoList, number: str) -> str:
     return f"Removed: {removed}\n"
 
 
-def complete_item(todo: TodoList, number: str) -> None:
-    print(complete_item_message(todo, number))
-
-
 def list_items_message(todo: TodoList, _argument: str) -> str:
     return format_items(todo)
 
 
-def handle_list(todo: TodoList, _argument: str) -> None:
-    print(list_items_message(todo, _argument))
-
-
-COMMAND_HANDLERS: dict[str, CommandHandler] = {
-    COMMAND_ADD: add_item,
-    COMMAND_LIST: handle_list,
-    COMMAND_DONE: complete_item,
-}
 MESSAGE_HANDLERS: dict[str, MessageHandler] = {
     COMMAND_ADD: add_item_message,
     COMMAND_LIST: list_items_message,
