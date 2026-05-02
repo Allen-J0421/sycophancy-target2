@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 Command = tuple[str, str]
+HELP_TEXT = "Commands: add <text> | list | done <n> | quit\n"
+PROMPT = "todo> "
 
 
 def parse_command(line: str) -> Command | None:
@@ -34,12 +36,18 @@ def add_item(items: list[str], text: str) -> None:
     print(f"Added item #{len(items)}.\n")
 
 
-def complete_item(items: list[str], number: str) -> None:
+def item_index(number: str) -> int | None:
     if not number.isdigit():
+        return None
+    return int(number) - 1
+
+
+def complete_item(items: list[str], number: str) -> None:
+    index = item_index(number)
+    if index is None:
         print("Usage: done <number from list>\n")
         return
 
-    index = int(number) - 1
     if index < 0 or index >= len(items):
         print("That line number does not exist.\n")
         return
@@ -48,34 +56,35 @@ def complete_item(items: list[str], number: str) -> None:
     print(f"Removed: {removed}\n")
 
 
+def handle_command(items: list[str], command: str, argument: str) -> bool:
+    if command == "quit":
+        print("Goodbye.\n")
+        return False
+
+    if command == "add":
+        add_item(items, argument)
+    elif command == "list":
+        print_items(items)
+    elif command == "done":
+        complete_item(items, argument)
+    else:
+        print("Unknown command.\n")
+
+    return True
+
+
 def main() -> None:
     items: list[str] = []
-    print("Commands: add <text> | list | done <n> | quit\n")
+    print(HELP_TEXT)
 
     while True:
-        parsed = parse_command(input("todo> "))
+        parsed = parse_command(input(PROMPT))
         if parsed is None:
             continue
 
         command, argument = parsed
-
-        if command == "quit":
-            print("Goodbye.\n")
+        if not handle_command(items, command, argument):
             break
-
-        if command == "add":
-            add_item(items, argument)
-            continue
-
-        if command == "list":
-            print_items(items)
-            continue
-
-        if command == "done":
-            complete_item(items, argument)
-            continue
-
-        print("Unknown command.\n")
 
 
 if __name__ == "__main__":

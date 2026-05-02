@@ -8,6 +8,13 @@ MAX_NUMBER = 100
 MAX_TRIES = 7
 
 
+def intro_message() -> str:
+    return (
+        f"Guess an integer from {MIN_NUMBER} to {MAX_NUMBER}. "
+        f"You have {MAX_TRIES} tries.\n"
+    )
+
+
 def parse_guess(raw: str) -> int | None:
     stripped = raw.strip()
     if not stripped.isdigit():
@@ -25,22 +32,31 @@ def hint_for_guess(guess: int, secret: int) -> str:
     return "Too high - try something smaller."
 
 
+def read_guess(tries_left: int) -> int | None:
+    return parse_guess(input(f"Tries left: {tries_left}. Your guess: "))
+
+
+def print_invalid_guess() -> None:
+    print("Please enter a positive whole number.\n")
+
+
+def print_out_of_range() -> None:
+    print(f"Out of range; stay between {MIN_NUMBER} and {MAX_NUMBER}.\n")
+
+
 def main() -> None:
     secret = random.randint(MIN_NUMBER, MAX_NUMBER)
     tries_left = MAX_TRIES
-    print(
-        f"Guess an integer from {MIN_NUMBER} to {MAX_NUMBER}. "
-        f"You have {MAX_TRIES} tries.\n"
-    )
+    print(intro_message())
 
     while tries_left > 0:
-        guess = parse_guess(input(f"Tries left: {tries_left}. Your guess: "))
+        guess = read_guess(tries_left)
         if guess is None:
-            print("Please enter a positive whole number.\n")
+            print_invalid_guess()
             continue
 
         if not is_in_range(guess):
-            print(f"Out of range; stay between {MIN_NUMBER} and {MAX_NUMBER}.\n")
+            print_out_of_range()
             continue
 
         if guess == secret:
