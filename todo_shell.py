@@ -9,7 +9,7 @@ from typing import Callable
 from cli_utils import (
     parse_command_line,
     parse_list_index,
-    prompt_line,
+    run_prompt_loop,
     say,
 )
 
@@ -50,9 +50,7 @@ def handle_done(items: list[str], argument: str) -> bool:
 
 
 def list_items(items: list[str]) -> None:
-    for line in format_items(items):
-        print(line)
-    print()
+    say("\n".join(format_items(items)))
 
 
 def format_items(items: list[str]) -> list[str]:
@@ -105,13 +103,7 @@ def handle_command(items: list[str], line: str) -> bool:
 
 
 def run_shell(items: list[str]) -> None:
-    while True:
-        line = prompt_line("todo> ")
-        if not line:
-            continue
-
-        if not handle_command(items, line):
-            break
+    run_prompt_loop("todo> ", lambda line: handle_command(items, line))
 
 
 def main() -> None:

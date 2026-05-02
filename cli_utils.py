@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+
 
 def say(message: str) -> None:
     print(message)
@@ -11,6 +13,16 @@ def say(message: str) -> None:
 
 def prompt_line(prompt: str) -> str:
     return input(prompt).strip()
+
+
+def run_prompt_loop(prompt: str, handle_line: Callable[[str], bool]) -> None:
+    while True:
+        line = prompt_line(prompt)
+        if not line:
+            continue
+
+        if not handle_line(line):
+            break
 
 
 def parse_positive_int(raw: str) -> int | None:
