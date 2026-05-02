@@ -21,7 +21,13 @@ class TodoShellTests(unittest.TestCase):
         self.assertIsNone(input_parsing.parse_positive_int("4.2"))
 
     def test_parse_command_normalizes_command_and_argument(self) -> None:
-        self.assertEqual(todo_shell.parse_command("  ADD buy milk  "), ("add", "buy milk"))
+        parsed = todo_shell.parse_command("  ADD buy milk  ")
+
+        self.assertIsNotNone(parsed)
+        assert parsed is not None
+        self.assertEqual(parsed, ("add", "buy milk"))
+        self.assertEqual(parsed.command, "add")
+        self.assertEqual(parsed.argument, "buy milk")
         self.assertIsNone(todo_shell.parse_command("   "))
 
     def test_format_items_handles_empty_and_numbered_lists(self) -> None:

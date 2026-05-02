@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from typing import NamedTuple
 
 from cli_io import (
     CliIO,
@@ -14,8 +15,15 @@ from cli_io import (
 )
 from input_parsing import parse_positive_int
 
-Command = tuple[str, str]
 MessageHandler = Callable[["TodoList", str], str]
+
+
+class ParsedCommand(NamedTuple):
+    command: str
+    argument: str
+
+
+Command = ParsedCommand
 
 HELP_TEXT = "Commands: add <text> | list | done <n> | quit\n"
 PROMPT = "todo> "
@@ -80,8 +88,7 @@ class TodoShellSession:
         if parsed is None:
             return None
 
-        command, argument = parsed
-        return self.evaluate_command(command, argument)
+        return self.evaluate_command(parsed.command, parsed.argument)
 
     def handle_line(self, line: str, writer: MessageWriter) -> bool:
         result = self.evaluate_line(line)
@@ -98,13 +105,13 @@ class TodoShellSession:
             pass
 
 
-def parse_command(line: str) -> Command | None:
+def parse_command(line: str) -> ParsedCommand | None:
     stripped = line.strip()
     if not stripped:
         return None
 
     command, _, argument = stripped.partition(" ")
-    return command.lower(), argument.strip()
+    return ParsedCommand(command.lower(), argument.strip())
 
 
 def format_items(todo: TodoList) -> str:
