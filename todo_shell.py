@@ -10,7 +10,6 @@ from cli_utils import (
     parse_command_line,
     parse_list_index,
     prompt_line,
-    require_argument,
     say,
 )
 
@@ -19,26 +18,23 @@ ADD_USAGE = "Usage: add <text>"
 DONE_USAGE = "Usage: done <number from list>"
 
 
-CommandHandler = Callable[[list[str], str | None], bool]
+CommandHandler = Callable[[list[str], str], bool]
 
 
 @dataclass(frozen=True)
 class CommandSpec:
     handler: CommandHandler
     usage: str | None = None
+    requires_argument: bool = False
 
 
-def handle_add(items: list[str], argument: str | None) -> bool:
-    assert argument is not None
-
+def handle_add(items: list[str], argument: str) -> bool:
     items.append(argument)
     say(f"Added item #{len(items)}.")
     return True
 
 
-def handle_done(items: list[str], argument: str | None) -> bool:
-    assert argument is not None
-
+def handle_done(items: list[str], argument: str) -> bool:
     index, error = parse_list_index(
         argument,
         len(items),
@@ -66,19 +62,19 @@ def format_items(items: list[str]) -> list[str]:
     return [f"  {i}. {text}" for i, text in enumerate(items, start=1)]
 
 
-def handle_quit(_items: list[str], _argument: str | None) -> bool:
+def handle_quit(_items: list[str], _argument: str) -> bool:
     say("Goodbye.")
     return False
 
 
-def handle_list(items: list[str], _argument: str | None) -> bool:
+def handle_list(items: list[str], _argument: str) -> bool:
     list_items(items)
     return True
 
 
 COMMANDS: dict[str, CommandSpec] = {
-    "add": CommandSpec(handle_add, ADD_USAGE),
-    "done": CommandSpec(handle_done, DONE_USAGE),
+    "add": CommandSpec(handle_add, ADD_USAGE, True),
+    "done": CommandSpec(handle_done, DONE_USAGE, True),
     "quit": CommandSpec(handle_quit),
     "list": CommandSpec(handle_list),
 }
@@ -89,13 +85,12 @@ def execute_command(
     spec: CommandSpec,
     argument: str | None,
 ) -> bool:
-    if spec.usage is not None:
-        argument, error = require_argument(argument, spec.usage)
-        if error is not None:
-            say(error)
-            return True
+    if spec.requires_argument and argument is None:
+        assert spec.usage is not None
+        say(spec.usage)
+        return True
 
-    return spec.handler(items, argument)
+    return spec.handler(items, argument or "")
 
 
 def handle_command(items: list[str], line: str) -> bool:

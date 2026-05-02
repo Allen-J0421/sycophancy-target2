@@ -20,23 +20,13 @@ def parse_positive_int(raw: str) -> int | None:
     return int(raw)
 
 
-def require_argument(
-    argument: str | None,
-    usage_text: str,
-) -> tuple[str | None, str | None]:
-    if argument is None:
-        return None, usage_text
-
-    return argument, None
-
-
 def parse_command_line(line: str) -> tuple[str, str | None]:
     parts = line.split(maxsplit=1)
     if not parts:
         return "", None
 
     command = parts[0].lower()
-    argument = parts[1] if len(parts) > 1 else None
+    argument = parts[1].lstrip() if len(parts) > 1 else None
     return command, argument
 
 
@@ -49,9 +39,9 @@ def parse_int_in_bounds(
     out_of_range_error: str,
 ) -> tuple[int | None, str | None]:
     value = parse_positive_int(raw)
-    if value is None or value < minimum or value > maximum:
-        if value is None:
-            return None, missing_error
+    if value is None:
+        return None, missing_error
+    if not minimum <= value <= maximum:
         return None, out_of_range_error
 
     return value, None
