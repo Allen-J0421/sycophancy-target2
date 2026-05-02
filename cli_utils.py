@@ -35,9 +35,26 @@ def parse_command_line(line: str) -> tuple[str, str | None]:
     if not parts:
         return "", None
 
-    command = parts[0].lower()
-    argument = parts[1] if len(parts) > 1 else None
-    return command, argument
+    command, *rest = parts
+    return command.lower(), rest[0] if rest else None
+
+
+def parse_int_in_bounds(
+    raw: str,
+    minimum: int,
+    maximum: int,
+    *,
+    missing_error: str,
+    out_of_range_error: str,
+) -> tuple[int | None, str | None]:
+    value = parse_positive_int(raw)
+    if value is None:
+        return None, missing_error
+
+    if value < minimum or value > maximum:
+        return None, out_of_range_error
+
+    return value, None
 
 
 def parse_int_in_range(
@@ -47,15 +64,14 @@ def parse_int_in_range(
     *,
     range_text: str | None = None,
 ) -> tuple[int | None, str | None]:
-    value = parse_positive_int(raw)
-    if value is None:
-        return None, "Please enter a positive whole number."
-
-    if value < minimum or value > maximum:
-        text = range_text if range_text is not None else f"{minimum} to {maximum}"
-        return None, f"Out of range; stay between {text}."
-
-    return value, None
+    text = range_text if range_text is not None else f"{minimum} to {maximum}"
+    return parse_int_in_bounds(
+        raw,
+        minimum,
+        maximum,
+        missing_error="Please enter a positive whole number.",
+        out_of_range_error=f"Out of range; stay between {text}.",
+    )
 
 
 def parse_list_index(
@@ -64,11 +80,10 @@ def parse_list_index(
     *,
     usage_text: str,
 ) -> tuple[int | None, str | None]:
-    index = parse_positive_int(raw)
-    if index is None:
-        return None, usage_text
-
-    if index < 1 or index > size:
-        return None, "That line number does not exist."
-
-    return index, None
+    return parse_int_in_bounds(
+        raw,
+        1,
+        size,
+        missing_error=usage_text,
+        out_of_range_error="That line number does not exist.",
+    )
