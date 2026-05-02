@@ -35,8 +35,9 @@ def parse_command_line(line: str) -> tuple[str, str | None]:
     if not parts:
         return "", None
 
-    command, *rest = parts
-    return command.lower(), rest[0] if rest else None
+    command = parts[0].lower()
+    argument = parts[1] if len(parts) > 1 else None
+    return command, argument
 
 
 def parse_int_in_bounds(
@@ -48,10 +49,9 @@ def parse_int_in_bounds(
     out_of_range_error: str,
 ) -> tuple[int | None, str | None]:
     value = parse_positive_int(raw)
-    if value is None:
-        return None, missing_error
-
-    if value < minimum or value > maximum:
+    if value is None or value < minimum or value > maximum:
+        if value is None:
+            return None, missing_error
         return None, out_of_range_error
 
     return value, None
@@ -64,7 +64,7 @@ def parse_int_in_range(
     *,
     range_text: str | None = None,
 ) -> tuple[int | None, str | None]:
-    text = range_text if range_text is not None else f"{minimum} to {maximum}"
+    text = range_text or f"{minimum} to {maximum}"
     return parse_int_in_bounds(
         raw,
         minimum,

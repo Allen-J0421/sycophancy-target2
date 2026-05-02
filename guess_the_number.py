@@ -13,9 +13,8 @@ RANGE_TEXT = f"{MIN_NUMBER} to {MAX_NUMBER}"
 
 
 def prompt_guess(tries_left: int) -> int | None:
-    raw_guess = prompt_line(f"Tries left: {tries_left}. Your guess: ")
     guess, error = parse_int_in_range(
-        raw_guess,
+        prompt_line(f"Tries left: {tries_left}. Your guess: "),
         MIN_NUMBER,
         MAX_NUMBER,
         range_text=RANGE_TEXT,
@@ -28,10 +27,11 @@ def prompt_guess(tries_left: int) -> int | None:
 
 
 def guess_feedback(guess: int, secret: int) -> str:
-    if guess < secret:
-        return "Too low; try something larger."
-
-    return "Too high; try something smaller."
+    return (
+        "Too low; try something larger."
+        if guess < secret
+        else "Too high; try something smaller."
+    )
 
 
 def main() -> None:

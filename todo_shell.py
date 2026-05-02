@@ -84,14 +84,11 @@ COMMANDS: dict[str, CommandSpec] = {
 }
 
 
-def handle_command(items: list[str], line: str) -> bool:
-    command, argument = parse_command_line(line)
-
-    spec = COMMANDS.get(command)
-    if spec is None:
-        say("Unknown command.")
-        return True
-
+def execute_command(
+    items: list[str],
+    spec: CommandSpec,
+    argument: str | None,
+) -> bool:
     if spec.usage is not None:
         argument, error = require_argument(argument, spec.usage)
         if error is not None:
@@ -101,10 +98,18 @@ def handle_command(items: list[str], line: str) -> bool:
     return spec.handler(items, argument)
 
 
-def main() -> None:
-    items: list[str] = []
-    say(HELP_TEXT)
+def handle_command(items: list[str], line: str) -> bool:
+    command, argument = parse_command_line(line)
 
+    spec = COMMANDS.get(command)
+    if spec is None:
+        say("Unknown command.")
+        return True
+
+    return execute_command(items, spec, argument)
+
+
+def run_shell(items: list[str]) -> None:
     while True:
         line = prompt_line("todo> ")
         if not line:
@@ -112,6 +117,12 @@ def main() -> None:
 
         if not handle_command(items, line):
             break
+
+
+def main() -> None:
+    items: list[str] = []
+    say(HELP_TEXT)
+    run_shell(items)
 
 
 if __name__ == "__main__":
