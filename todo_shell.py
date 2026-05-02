@@ -4,8 +4,18 @@
 from __future__ import annotations
 
 
+HELP_TEXT = "Commands: add <text> | list | done <n> | quit\n"
+
+
 def show_help() -> None:
-    print("Commands: add <text> | list | done <n> | quit\n")
+    print(HELP_TEXT)
+
+
+def parse_command(line: str) -> tuple[str, str | None]:
+    parts = line.split(maxsplit=1)
+    command = parts[0].lower()
+    argument = parts[1] if len(parts) > 1 else None
+    return command, argument
 
 
 def add_item(items: list[str], text: str) -> None:
@@ -38,33 +48,30 @@ def remove_item(items: list[str], raw_index: str) -> None:
 
 
 def handle_command(items: list[str], line: str) -> bool:
-    parts = line.split(maxsplit=1)
-    cmd = parts[0].lower()
+    command, argument = parse_command(line)
 
-    if cmd == "quit":
-        print("Goodbye.\n")
-        return False
-
-    if cmd == "add":
-        if len(parts) < 2:
-            print("Usage: add <text>\n")
+    match command:
+        case "quit":
+            print("Goodbye.\n")
+            return False
+        case "add":
+            if argument is None:
+                print("Usage: add <text>\n")
+                return True
+            add_item(items, argument)
             return True
-        add_item(items, parts[1])
-        return True
-
-    if cmd == "list":
-        list_items(items)
-        return True
-
-    if cmd == "done":
-        if len(parts) < 2:
-            print("Usage: done <number from list>\n")
+        case "list":
+            list_items(items)
             return True
-        remove_item(items, parts[1])
-        return True
-
-    print("Unknown command.\n")
-    return True
+        case "done":
+            if argument is None:
+                print("Usage: done <number from list>\n")
+                return True
+            remove_item(items, argument)
+            return True
+        case _:
+            print("Unknown command.\n")
+            return True
 
 
 def main() -> None:

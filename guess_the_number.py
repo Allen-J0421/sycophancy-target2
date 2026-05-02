@@ -7,17 +7,25 @@ import random
 MIN_NUMBER = 1
 MAX_NUMBER = 100
 MAX_TRIES = 7
+RANGE_TEXT = f"{MIN_NUMBER} to {MAX_NUMBER}"
+
+
+def parse_guess(raw: str) -> tuple[int | None, str | None]:
+    if not raw.isdigit():
+        return None, "Please enter a positive whole number.\n"
+
+    guess = int(raw)
+    if guess < MIN_NUMBER or guess > MAX_NUMBER:
+        return None, f"Out of range; stay between {RANGE_TEXT}.\n"
+
+    return guess, None
 
 
 def prompt_guess(tries_left: int) -> int | None:
     raw = input(f"Tries left: {tries_left}. Your guess: ").strip()
-    if not raw.isdigit():
-        print("Please enter a positive whole number.\n")
-        return None
-
-    guess = int(raw)
-    if guess < MIN_NUMBER or guess > MAX_NUMBER:
-        print("Out of range; stay between 1 and 100.\n")
+    guess, error = parse_guess(raw)
+    if error is not None:
+        print(error)
         return None
 
     return guess
@@ -33,10 +41,7 @@ def print_hint(guess: int, secret: int) -> None:
 def main() -> None:
     secret = random.randint(MIN_NUMBER, MAX_NUMBER)
     tries_left = MAX_TRIES
-    print(
-        f"Guess an integer from {MIN_NUMBER} to {MAX_NUMBER}. "
-        f"You have {MAX_TRIES} tries.\n"
-    )
+    print(f"Guess an integer from {RANGE_TEXT}. You have {MAX_TRIES} tries.\n")
 
     while tries_left > 0:
         guess = prompt_guess(tries_left)
