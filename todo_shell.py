@@ -27,6 +27,21 @@ def add_item(items: list[str], text: str) -> None:
     say(f"Added item #{len(items)}.")
 
 
+def run_text_command(
+    items: list[str],
+    argument: str | None,
+    usage_text: str,
+    action: Callable[[list[str], str], None],
+) -> bool:
+    argument, error = require_argument(argument, usage_text)
+    if error is not None:
+        say(error)
+        return True
+
+    action(items, argument)
+    return True
+
+
 def list_items(items: list[str]) -> None:
     if not items:
         say("(empty)")
@@ -57,13 +72,7 @@ def handle_quit(_items: list[str], _argument: str | None) -> bool:
 
 
 def handle_add(items: list[str], argument: str | None) -> bool:
-    argument, error = require_argument(argument, ADD_USAGE)
-    if error is not None:
-        say(error)
-        return True
-
-    add_item(items, argument)
-    return True
+    return run_text_command(items, argument, ADD_USAGE, add_item)
 
 
 def handle_list(items: list[str], _argument: str | None) -> bool:
@@ -72,13 +81,7 @@ def handle_list(items: list[str], _argument: str | None) -> bool:
 
 
 def handle_done(items: list[str], argument: str | None) -> bool:
-    argument, error = require_argument(argument, DONE_USAGE)
-    if error is not None:
-        say(error)
-        return True
-
-    remove_item(items, argument)
-    return True
+    return run_text_command(items, argument, DONE_USAGE, remove_item)
 
 
 CommandHandler = Callable[[list[str], str | None], bool]
