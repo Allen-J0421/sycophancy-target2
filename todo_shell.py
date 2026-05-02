@@ -7,11 +7,10 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from cli_io import (
+    CliIO,
     InputReader,
     MessageWriter,
     print_message,
-    resolve_reader,
-    resolve_writer,
 )
 from input_parsing import parse_positive_int
 
@@ -147,18 +146,17 @@ def run_shell(
 ) -> None:
     if todo is None:
         todo = TodoList()
-    reader = resolve_reader(reader)
-    writer = resolve_writer(writer)
+    io = CliIO.resolve(reader, writer)
 
-    writer(HELP_TEXT)
+    io.write(HELP_TEXT)
 
     while True:
-        parsed = parse_command(reader(PROMPT))
+        parsed = parse_command(io.read(PROMPT))
         if parsed is None:
             continue
 
         command, argument = parsed
-        if not handle_command_with_writer(todo, command, argument, writer):
+        if not handle_command_with_writer(todo, command, argument, io.write):
             break
 
 

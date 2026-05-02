@@ -8,11 +8,11 @@ import random
 from typing import Protocol
 
 from cli_io import (
+    CliIO,
     InputReader,
     MessageWriter,
     print_message,
     resolve_reader,
-    resolve_writer,
 )
 from input_parsing import parse_positive_int
 
@@ -159,21 +159,20 @@ def run_game(
     reader: InputReader | None = None,
     writer: MessageWriter | None = None,
 ) -> None:
-    reader = resolve_reader(reader)
-    writer = resolve_writer(writer)
+    io = CliIO.resolve(reader, writer)
 
     session = start_session(config, rng)
-    writer(intro_message(config))
+    io.write(intro_message(config))
 
     while session.has_tries_left:
-        guess = session.read_guess(reader)
+        guess = session.read_guess(io.read)
         outcome = session.evaluate(guess)
-        writer(outcome.message)
+        io.write(outcome.message)
 
         if outcome.won:
             return
 
-    writer(losing_message(session.secret))
+    io.write(losing_message(session.secret))
 
 
 def main(config: GameConfig = CONFIG, rng: RandomSource = random) -> None:
