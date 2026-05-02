@@ -1,10 +1,17 @@
 import unittest
 
 import guess_the_number
+import input_parsing
 import todo_shell
 
 
 class TodoShellTests(unittest.TestCase):
+    def test_parse_positive_int_accepts_only_digits(self) -> None:
+        self.assertEqual(input_parsing.parse_positive_int(" 42 "), 42)
+        self.assertIsNone(input_parsing.parse_positive_int(""))
+        self.assertIsNone(input_parsing.parse_positive_int("-1"))
+        self.assertIsNone(input_parsing.parse_positive_int("4.2"))
+
     def test_parse_command_normalizes_command_and_argument(self) -> None:
         self.assertEqual(todo_shell.parse_command("  ADD buy milk  "), ("add", "buy milk"))
         self.assertIsNone(todo_shell.parse_command("   "))

@@ -7,6 +7,8 @@ from dataclasses import dataclass
 import random
 from typing import Protocol
 
+from input_parsing import parse_positive_int
+
 
 class RandomSource(Protocol):
     def randint(self, a: int, b: int) -> int: ...
@@ -59,10 +61,7 @@ def intro_message(config: GameConfig = CONFIG) -> str:
 
 
 def parse_guess(raw: str) -> int | None:
-    stripped = raw.strip()
-    if not stripped.isdigit():
-        return None
-    return int(stripped)
+    return parse_positive_int(raw)
 
 
 def is_in_range(guess: int, config: GameConfig = CONFIG) -> bool:

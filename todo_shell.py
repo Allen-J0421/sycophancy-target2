@@ -6,6 +6,8 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass, field
 
+from input_parsing import parse_positive_int
+
 Command = tuple[str, str]
 MessageHandler = Callable[["TodoList", str], str]
 
@@ -71,10 +73,10 @@ def add_item_message(todo: TodoList, text: str) -> str:
 
 
 def parse_item_number(number: str) -> int | None:
-    stripped = number.strip()
-    if not stripped.isdigit():
+    parsed = parse_positive_int(number)
+    if parsed is None:
         return None
-    return int(stripped) - 1
+    return parsed - 1
 
 
 def item_index(number: str) -> int | None:
