@@ -39,7 +39,34 @@ class TestTodoShell(unittest.TestCase):
         with self.assertRaises(IndexError):
             todos.done(2)
 
+    def test_run_shell_injected_io(self) -> None:
+        inputs = iter(
+            [
+                "add a",
+                "add b",
+                "list",
+                "done 2",
+                "list",
+                "quit",
+            ]
+        )
+        outputs: list[str] = []
+
+        def input_fn(_prompt: str) -> str:
+            return next(inputs)
+
+        def output_fn(line: str) -> None:
+            outputs.append(line)
+
+        todo_shell.run_shell(input_fn=input_fn, output_fn=output_fn)
+
+        self.assertIn("Added item #1.", outputs)
+        self.assertIn("Added item #2.", outputs)
+        self.assertIn("  1. a", outputs)
+        self.assertIn("  2. b", outputs)
+        self.assertIn("Removed: b", outputs)
+        self.assertIn("Goodbye.", outputs)
+
 
 if __name__ == "__main__":
     unittest.main()
-

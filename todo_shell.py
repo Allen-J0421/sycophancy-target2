@@ -3,7 +3,11 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
+
+InputFn = Callable[[str], str]
+OutputFn = Callable[[str], None]
 
 
 @dataclass
@@ -42,49 +46,62 @@ class TodoList:
         return self._items.pop(n - 1)
 
 
-def main() -> None:
+def run_shell(*, input_fn: InputFn = input, output_fn: OutputFn = print) -> None:
     todos = TodoList()
-    print("Commands: add <text> | list | done <n> | quit\n")
+    output_fn("Commands: add <text> | list | done <n> | quit")
+    output_fn("")
 
     while True:
-        cmd = parse_command(input("todo> "))
+        cmd = parse_command(input_fn("todo> "))
         if cmd is None:
             continue
 
         if cmd.name == "quit":
-            print("Goodbye.\n")
-            break
+            output_fn("Goodbye.")
+            output_fn("")
+            return
 
         if cmd.name == "add":
             if not cmd.arg:
-                print("Usage: add <text>\n")
+                output_fn("Usage: add <text>")
+                output_fn("")
                 continue
             item_num = todos.add(cmd.arg)
-            print(f"Added item #{item_num}.\n")
+            output_fn(f"Added item #{item_num}.")
+            output_fn("")
             continue
 
         if cmd.name == "list":
             if todos.is_empty():
-                print("(empty)\n")
+                output_fn("(empty)")
+                output_fn("")
                 continue
             for line in todos.list_lines():
-                print(line)
-            print()
+                output_fn(line)
+            output_fn("")
             continue
 
         if cmd.name == "done":
             if not cmd.arg or not cmd.arg.isdigit():
-                print("Usage: done <number from list>\n")
+                output_fn("Usage: done <number from list>")
+                output_fn("")
                 continue
             try:
                 removed = todos.done(int(cmd.arg))
             except IndexError as exc:
-                print(f"{exc}\n")
+                output_fn(str(exc))
+                output_fn("")
                 continue
-            print(f"Removed: {removed}\n")
+            output_fn(f"Removed: {removed}")
+            output_fn("")
             continue
 
-        print("Unknown command.\n")
+        output_fn("Unknown command.")
+        output_fn("")
+
+
+def main() -> None:
+    run_shell()
 
 
 if __name__ == "__main__":

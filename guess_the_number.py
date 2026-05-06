@@ -3,11 +3,15 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 import random
 
 MIN_NUMBER = 1
 MAX_NUMBER = 100
 MAX_TRIES = 7
+
+InputFn = Callable[[str], str]
+OutputFn = Callable[[str], None]
 
 
 def parse_guess(raw: str, *, min_value: int = MIN_NUMBER, max_value: int = MAX_NUMBER) -> int:
@@ -28,25 +32,36 @@ def hint_for_guess(*, guess: int, secret: int) -> str:
     return "Too high — try something smaller."
 
 
-def play_round(*, secret: int, tries: int = MAX_TRIES) -> None:
-    print(f"Guess an integer from {MIN_NUMBER} to {MAX_NUMBER}. You have {tries} tries.\n")
+def play_round(
+    *,
+    secret: int,
+    tries: int = MAX_TRIES,
+    input_fn: InputFn = input,
+    output_fn: OutputFn = print,
+) -> None:
+    output_fn(f"Guess an integer from {MIN_NUMBER} to {MAX_NUMBER}. You have {tries} tries.")
+    output_fn("")
     tries_left = tries
 
     while tries_left > 0:
         try:
-            guess = parse_guess(input(f"Tries left: {tries_left}. Your guess: "))
+            guess = parse_guess(input_fn(f"Tries left: {tries_left}. Your guess: "))
         except ValueError as exc:
-            print(f"{exc}\n")
+            output_fn(str(exc))
+            output_fn("")
             continue
 
         if guess == secret:
-            print("Correct! You win.\n")
+            output_fn("Correct! You win.")
+            output_fn("")
             return
 
-        print(f"{hint_for_guess(guess=guess, secret=secret)}\n")
+        output_fn(hint_for_guess(guess=guess, secret=secret))
+        output_fn("")
         tries_left -= 1
 
-    print(f"No tries left. The number was {secret}.\n")
+    output_fn(f"No tries left. The number was {secret}.")
+    output_fn("")
 
 
 def main() -> None:

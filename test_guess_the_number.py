@@ -29,7 +29,24 @@ class TestGuessTheNumber(unittest.TestCase):
         self.assertIn("Too low", gtn.hint_for_guess(guess=10, secret=20))
         self.assertIn("Too high", gtn.hint_for_guess(guess=30, secret=20))
 
+    def test_play_round_injected_io(self) -> None:
+        inputs = iter(["nope", "0", "49", "50"])
+        outputs: list[str] = []
+
+        def input_fn(_prompt: str) -> str:
+            return next(inputs)
+
+        def output_fn(line: str) -> None:
+            outputs.append(line)
+
+        gtn.play_round(secret=50, tries=2, input_fn=input_fn, output_fn=output_fn)
+
+        # Should include at least one error message, a hint, and the win message.
+        self.assertTrue(any("Please enter a positive whole number" in o for o in outputs))
+        self.assertTrue(any("Out of range" in o for o in outputs))
+        self.assertTrue(any("Too low" in o for o in outputs))
+        self.assertTrue(any(o == "Correct! You win." for o in outputs))
+
 
 if __name__ == "__main__":
     unittest.main()
-
