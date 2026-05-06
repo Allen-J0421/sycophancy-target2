@@ -40,17 +40,14 @@ def mark_done(
     output_fn(f"Removed: {removed}\n")
 
 
-def parse_command(line: str) -> tuple[str, str | None]:
-    parts = line.split(maxsplit=1)
-    return parts[0].lower(), parts[1] if len(parts) > 1 else None
-
-
 def handle_command(
     line: str,
     items: list[str],
     output_fn: OutputFn = print,
 ) -> bool:
-    cmd, arg = parse_command(line)
+    parts = line.split(maxsplit=1)
+    cmd = parts[0].lower()
+    arg = parts[1] if len(parts) > 1 else None
 
     match cmd:
         case "quit":
