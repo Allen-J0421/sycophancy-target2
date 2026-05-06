@@ -32,7 +32,7 @@ def mark_done(
         output_fn("Usage: done <number from list>\n")
         return
 
-    if index < 1 or index > len(items):
+    if index > len(items):
         output_fn("That line number does not exist.\n")
         return
 

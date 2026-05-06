@@ -8,6 +8,8 @@ class ParsePositiveIntTests(unittest.TestCase):
         self.assertEqual(parse_positive_int("42"), 42)
         self.assertIsNone(parse_positive_int("abc"))
         self.assertIsNone(parse_positive_int(""))
+        self.assertIsNone(parse_positive_int("0"))
+        self.assertIsNone(parse_positive_int("-1"))
 
 
 if __name__ == "__main__":

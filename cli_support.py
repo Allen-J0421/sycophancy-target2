@@ -8,6 +8,10 @@ OutputFn = Callable[[str], None]
 
 
 def parse_positive_int(raw: str) -> int | None:
-    if not raw.isdigit():
+    try:
+        value = int(raw)
+    except ValueError:
         return None
-    return int(raw)
+    if value <= 0:
+        return None
+    return value
