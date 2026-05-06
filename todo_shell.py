@@ -6,7 +6,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass, field
 
-from cli_io import InputFunc, OutputFunc, write_message
+from cli_io import InputFunc, OutputFunc, read_prompt, write_message
 
 COMMANDS_HELP = "Commands: add <text> | list | done <n> | quit"
 
@@ -110,7 +110,7 @@ def run_shell(
     write_message(output_func, COMMANDS_HELP)
 
     while True:
-        line = input_func("todo> ").strip()
+        line = read_prompt(input_func, "todo> ")
         if not line:
             continue
 

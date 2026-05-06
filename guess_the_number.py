@@ -7,7 +7,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 import random
 
-from cli_io import InputFunc, OutputFunc, write_message
+from cli_io import InputFunc, OutputFunc, read_prompt, write_message
 
 
 @dataclass(frozen=True)
@@ -68,7 +68,7 @@ class GuessingGame:
 
     def read_guess(self, tries_left: int) -> int | None:
         result = parse_guess(
-            self.input_func(f"Tries left: {tries_left}. Your guess: ").strip(),
+            read_prompt(self.input_func, f"Tries left: {tries_left}. Your guess: "),
             self.config,
         )
         if result.error:
