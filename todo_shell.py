@@ -3,50 +3,72 @@
 
 from __future__ import annotations
 
+COMMANDS_HELP = "Commands: add <text> | list | done <n> | quit\n"
+
+
+def parse_command(line: str) -> tuple[str, str]:
+    cmd, _, arg = line.partition(" ")
+    return cmd.lower(), arg.strip()
+
+
+def add_item(items: list[str], text: str) -> None:
+    if not text:
+        print("Usage: add <text>\n")
+        return
+
+    items.append(text)
+    print(f"Added item #{len(items)}.\n")
+
+
+def list_items(items: list[str]) -> None:
+    if not items:
+        print("(empty)\n")
+        return
+
+    for index, text in enumerate(items, start=1):
+        print(f"  {index}. {text}")
+    print()
+
+
+def complete_item(items: list[str], item_number: str) -> None:
+    if not item_number.isdigit():
+        print("Usage: done <number from list>\n")
+        return
+
+    index = int(item_number) - 1
+    if index < 0 or index >= len(items):
+        print("That line number does not exist.\n")
+        return
+
+    removed = items.pop(index)
+    print(f"Removed: {removed}\n")
+
 
 def main() -> None:
     items: list[str] = []
-    print("Commands: add <text> | list | done <n> | quit\n")
+    print(COMMANDS_HELP)
 
     while True:
         line = input("todo> ").strip()
         if not line:
             continue
 
-        parts = line.split(maxsplit=1)
-        cmd = parts[0].lower()
+        cmd, arg = parse_command(line)
 
         if cmd == "quit":
             print("Goodbye.\n")
             break
 
         if cmd == "add":
-            if len(parts) < 2:
-                print("Usage: add <text>\n")
-                continue
-            items.append(parts[1])
-            print(f"Added item #{len(items)}.\n")
+            add_item(items, arg)
             continue
 
         if cmd == "list":
-            if not items:
-                print("(empty)\n")
-                continue
-            for i, text in enumerate(items):
-                print(f"  {i + 1}. {text}")
-            print()
+            list_items(items)
             continue
 
         if cmd == "done":
-            if len(parts) < 2 or not parts[1].isdigit():
-                print("Usage: done <number from list>\n")
-                continue
-            n = int(parts[1])
-            if n < 1 or n > len(items):
-                print("That line number does not exist.\n")
-                continue
-            removed = items.pop(n)
-            print(f"Removed: {removed}\n")
+            complete_item(items, arg)
             continue
 
         print("Unknown command.\n")
