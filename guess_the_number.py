@@ -41,27 +41,42 @@ def prompt_guess(
     return guess
 
 
+def handle_guess(
+    secret: int,
+    tries_left: int,
+    input_fn: InputFn = input,
+    output_fn: OutputFn = print,
+) -> bool | None:
+    guess = prompt_guess(tries_left, input_fn, output_fn)
+    if guess is None:
+        return None
+
+    if guess == secret:
+        output_fn("Correct! You win.\n")
+        return True
+
+    output_fn(f"{hint_for_guess(guess, secret)}\n")
+    return False
+
+
 def play_game(
     secret: int,
     input_fn: InputFn = input,
     output_fn: OutputFn = print,
 ) -> None:
-    tries_left = MAX_TRIES
     output_fn(
         f"Guess an integer from {LOWER_BOUND} to {UPPER_BOUND}. "
         f"You have {MAX_TRIES} tries.\n"
     )
 
+    tries_left = MAX_TRIES
     while tries_left > 0:
-        guess = prompt_guess(tries_left, input_fn, output_fn)
-        if guess is None:
+        result = handle_guess(secret, tries_left, input_fn, output_fn)
+        if result is None:
             continue
 
-        if guess == secret:
-            output_fn("Correct! You win.\n")
+        if result:
             return
-
-        output_fn(f"{hint_for_guess(guess, secret)}\n")
 
         tries_left -= 1
 
