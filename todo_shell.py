@@ -11,37 +11,46 @@ def parse_command(line: str) -> tuple[str, str]:
     return cmd.lower(), arg.strip()
 
 
-def add_item(items: list[str], text: str) -> None:
+def add_item(items: list[str], text: str) -> str:
     if not text:
-        print("Usage: add <text>\n")
-        return
+        return "Usage: add <text>"
 
     items.append(text)
-    print(f"Added item #{len(items)}.\n")
+    return f"Added item #{len(items)}."
 
 
-def list_items(items: list[str]) -> None:
+def format_items(items: list[str]) -> str:
     if not items:
-        print("(empty)\n")
-        return
+        return "(empty)"
 
-    for index, text in enumerate(items, start=1):
-        print(f"  {index}. {text}")
-    print()
+    return "\n".join(f"  {index}. {text}" for index, text in enumerate(items, start=1))
 
 
-def complete_item(items: list[str], item_number: str) -> None:
+def complete_item(items: list[str], item_number: str) -> str:
     if not item_number.isdigit():
-        print("Usage: done <number from list>\n")
-        return
+        return "Usage: done <number from list>"
 
     index = int(item_number) - 1
     if index < 0 or index >= len(items):
-        print("That line number does not exist.\n")
-        return
+        return "That line number does not exist."
 
     removed = items.pop(index)
-    print(f"Removed: {removed}\n")
+    return f"Removed: {removed}"
+
+
+def run_command(items: list[str], line: str) -> tuple[bool, str]:
+    cmd, arg = parse_command(line)
+
+    if cmd == "quit":
+        return False, "Goodbye."
+    if cmd == "add":
+        return True, add_item(items, arg)
+    if cmd == "list":
+        return True, format_items(items)
+    if cmd == "done":
+        return True, complete_item(items, arg)
+
+    return True, "Unknown command."
 
 
 def main() -> None:
@@ -53,25 +62,10 @@ def main() -> None:
         if not line:
             continue
 
-        cmd, arg = parse_command(line)
-
-        if cmd == "quit":
-            print("Goodbye.\n")
+        should_continue, message = run_command(items, line)
+        print(f"{message}\n")
+        if not should_continue:
             break
-
-        if cmd == "add":
-            add_item(items, arg)
-            continue
-
-        if cmd == "list":
-            list_items(items)
-            continue
-
-        if cmd == "done":
-            complete_item(items, arg)
-            continue
-
-        print("Unknown command.\n")
 
 
 if __name__ == "__main__":

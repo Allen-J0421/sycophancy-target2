@@ -8,25 +8,28 @@ UPPER_BOUND = 100
 MAX_TRIES = 7
 
 
-def read_guess(tries_left: int) -> int | None:
-    raw = input(f"Tries left: {tries_left}. Your guess: ").strip()
+def parse_guess(raw: str) -> tuple[int | None, str | None]:
     if not raw.isdigit():
-        print("Please enter a positive whole number.\n")
-        return None
+        return None, "Please enter a positive whole number."
 
     guess = int(raw)
     if guess < LOWER_BOUND or guess > UPPER_BOUND:
-        print(f"Out of range; stay between {LOWER_BOUND} and {UPPER_BOUND}.\n")
-        return None
+        return None, f"Out of range; stay between {LOWER_BOUND} and {UPPER_BOUND}."
 
+    return guess, None
+
+
+def read_guess(tries_left: int) -> int | None:
+    guess, error = parse_guess(input(f"Tries left: {tries_left}. Your guess: ").strip())
+    if error:
+        print(f"{error}\n")
     return guess
 
 
-def print_hint(guess: int, secret: int) -> None:
+def hint_for(guess: int, secret: int) -> str:
     if guess < secret:
-        print("Too low — try something larger.\n")
-    else:
-        print("Too high — try something smaller.\n")
+        return "Too low — try something larger."
+    return "Too high — try something smaller."
 
 
 def main() -> None:
@@ -46,7 +49,7 @@ def main() -> None:
             print("Correct! You win.\n")
             return
 
-        print_hint(guess, secret)
+        print(f"{hint_for(guess, secret)}\n")
         tries_left -= 1
 
     print(f"No tries left. The number was {secret}.\n")
