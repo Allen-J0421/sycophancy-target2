@@ -23,6 +23,10 @@ class TodoShellTests(unittest.TestCase):
                 "Goodbye.\n",
             ],
         )
+        self.assertEqual(
+            io.prompts,
+            ["todo> ", "todo> ", "todo> ", "todo> "],
+        )
 
 
 if __name__ == "__main__":

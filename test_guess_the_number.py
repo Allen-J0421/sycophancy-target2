@@ -32,6 +32,14 @@ class GuessTheNumberTests(unittest.TestCase):
                 "Correct! You win.\n",
             ],
         )
+        self.assertEqual(
+            io.prompts,
+            [
+                "Tries left: 7. Your guess: ",
+                "Tries left: 7. Your guess: ",
+                "Tries left: 7. Your guess: ",
+            ],
+        )
 
 
 if __name__ == "__main__":
