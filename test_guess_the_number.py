@@ -13,7 +13,7 @@ class GuessTheNumberTests(unittest.TestCase):
     def test_parse_guess_uses_config_bounds(self) -> None:
         config = GameConfig(lower_bound=10, upper_bound=20, max_tries=3)
 
-        self.assertEqual(parse_guess("15", config), GuessParseResult(15, None))
+        self.assertEqual(parse_guess("15", config), GuessParseResult.valid(15))
         self.assertIsNone(parse_guess("abc", config).guess)
         self.assertIsNone(parse_guess("9", config).guess)
 

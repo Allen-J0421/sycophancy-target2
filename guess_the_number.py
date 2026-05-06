@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Interactive number guessing game (1–100, limited tries)."""
 
+from __future__ import annotations
+
 from collections.abc import Callable
 from dataclasses import dataclass
 import random
@@ -27,21 +29,28 @@ class GuessParseResult:
     guess: int | None
     error: str | None
 
+    @classmethod
+    def valid(cls, guess: int) -> GuessParseResult:
+        return cls(guess, None)
+
+    @classmethod
+    def invalid(cls, error: str) -> GuessParseResult:
+        return cls(None, error)
+
 
 def parse_guess(
     raw: str, config: GameConfig = DEFAULT_CONFIG
 ) -> GuessParseResult:
     if not raw.isdigit():
-        return GuessParseResult(None, "Please enter a positive whole number.")
+        return GuessParseResult.invalid("Please enter a positive whole number.")
 
     guess = int(raw)
     if not config.contains(guess):
-        return GuessParseResult(
-            None,
+        return GuessParseResult.invalid(
             f"Out of range; stay between {config.lower_bound} and {config.upper_bound}.",
         )
 
-    return GuessParseResult(guess, None)
+    return GuessParseResult.valid(guess)
 
 
 def hint_for(guess: int, secret: int) -> str:
