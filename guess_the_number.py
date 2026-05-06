@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Interactive number guessing game (1–100, limited tries)."""
 
+from collections.abc import Callable
 from dataclasses import dataclass
 import random
 
@@ -16,6 +17,9 @@ class GameConfig:
 
 
 DEFAULT_CONFIG = GameConfig()
+InputFunc = Callable[[str], str]
+OutputFunc = Callable[[str], None]
+RandintFunc = Callable[[int, int], int]
 
 
 def parse_guess(
@@ -34,12 +38,21 @@ def parse_guess(
     return guess, None
 
 
-def read_guess(tries_left: int, config: GameConfig = DEFAULT_CONFIG) -> int | None:
+def write_message(output_func: OutputFunc, message: str) -> None:
+    output_func(f"{message}\n")
+
+
+def read_guess(
+    tries_left: int,
+    config: GameConfig = DEFAULT_CONFIG,
+    input_func: InputFunc = input,
+    output_func: OutputFunc = print,
+) -> int | None:
     guess, error = parse_guess(
-        input(f"Tries left: {tries_left}. Your guess: ").strip(), config
+        input_func(f"Tries left: {tries_left}. Your guess: ").strip(), config
     )
     if error:
-        print(f"{error}\n")
+        write_message(output_func, error)
     return guess
 
 
@@ -49,27 +62,33 @@ def hint_for(guess: int, secret: int) -> str:
     return "Too high — try something smaller."
 
 
-def run_game(config: GameConfig = DEFAULT_CONFIG) -> None:
-    secret = random.randint(config.lower_bound, config.upper_bound)
+def run_game(
+    config: GameConfig = DEFAULT_CONFIG,
+    input_func: InputFunc = input,
+    output_func: OutputFunc = print,
+    randint_func: RandintFunc = random.randint,
+) -> None:
+    secret = randint_func(config.lower_bound, config.upper_bound)
     tries_left = config.max_tries
-    print(
+    write_message(
+        output_func,
         f"Guess an integer from {config.lower_bound} to {config.upper_bound}. "
-        f"You have {config.max_tries} tries.\n"
+        f"You have {config.max_tries} tries.",
     )
 
     while tries_left > 0:
-        guess = read_guess(tries_left, config)
+        guess = read_guess(tries_left, config, input_func, output_func)
         if guess is None:
             continue
 
         if guess == secret:
-            print("Correct! You win.\n")
+            write_message(output_func, "Correct! You win.")
             return
 
-        print(f"{hint_for(guess, secret)}\n")
+        write_message(output_func, hint_for(guess, secret))
         tries_left -= 1
 
-    print(f"No tries left. The number was {secret}.\n")
+    write_message(output_func, f"No tries left. The number was {secret}.")
 
 
 def main() -> None:

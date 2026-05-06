@@ -7,6 +7,8 @@ from collections.abc import Callable
 
 COMMANDS_HELP = "Commands: add <text> | list | done <n> | quit\n"
 CommandHandler = Callable[[list[str], str], tuple[bool, str]]
+InputFunc = Callable[[str], str]
+OutputFunc = Callable[[str], None]
 
 
 def parse_command(line: str) -> tuple[str, str]:
@@ -74,19 +76,29 @@ def run_command(items: list[str], line: str) -> tuple[bool, str]:
     return handler(items, arg)
 
 
-def main() -> None:
+def write_message(output_func: OutputFunc, message: str) -> None:
+    output_func(f"{message}\n")
+
+
+def run_shell(
+    input_func: InputFunc = input, output_func: OutputFunc = print
+) -> None:
     items: list[str] = []
-    print(COMMANDS_HELP)
+    output_func(COMMANDS_HELP)
 
     while True:
-        line = input("todo> ").strip()
+        line = input_func("todo> ").strip()
         if not line:
             continue
 
         should_continue, message = run_command(items, line)
-        print(f"{message}\n")
+        write_message(output_func, message)
         if not should_continue:
             break
+
+
+def main() -> None:
+    run_shell()
 
 
 if __name__ == "__main__":
