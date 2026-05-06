@@ -2,6 +2,7 @@
 """Interactive number guessing game (1–100, limited tries)."""
 
 import random
+from typing import NamedTuple
 
 from cli_support import InputFn, OutputFn, parse_positive_int
 
@@ -9,6 +10,11 @@ from cli_support import InputFn, OutputFn, parse_positive_int
 LOWER_BOUND = 1
 UPPER_BOUND = 100
 MAX_TRIES = 7
+
+
+class GuessValidation(NamedTuple):
+    guess: int | None
+    error: str | None
 
 
 def in_range(value: int) -> bool:
@@ -21,17 +27,18 @@ def hint_for_guess(guess: int, secret: int) -> str:
     return "Too high — try something smaller."
 
 
-def validate_guess(raw: str) -> tuple[int | None, str | None]:
+def validate_guess(raw: str) -> GuessValidation:
     guess = parse_positive_int(raw)
     if guess is None:
-        return None, "Please enter a positive whole number.\n"
+        return GuessValidation(None, "Please enter a positive whole number.\n")
 
     if not in_range(guess):
-        return None, (
-            f"Out of range; stay between {LOWER_BOUND} and {UPPER_BOUND}.\n"
+        return GuessValidation(
+            None,
+            f"Out of range; stay between {LOWER_BOUND} and {UPPER_BOUND}.\n",
         )
 
-    return guess, None
+    return GuessValidation(guess, None)
 
 
 def prompt_guess(
@@ -40,12 +47,12 @@ def prompt_guess(
     output_fn: OutputFn = print,
 ) -> int | None:
     raw = input_fn(f"Tries left: {tries_left}. Your guess: ").strip()
-    guess, message = validate_guess(raw)
-    if message is not None:
-        output_fn(message)
+    result = validate_guess(raw)
+    if result.error is not None:
+        output_fn(result.error)
         return None
 
-    return guess
+    return result.guess
 
 
 def respond_to_guess(
