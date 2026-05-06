@@ -50,7 +50,14 @@ def run_shell(*, input_fn: InputFn = input, output_fn: OutputFn = print) -> None
     write(output_fn)
 
     while True:
-        cmd = parse_command(input_fn("todo> "))
+        try:
+            line = input_fn("todo> ")
+        except (EOFError, KeyboardInterrupt):
+            write(output_fn, "Goodbye.")
+            write(output_fn)
+            return
+
+        cmd = parse_command(line)
         if cmd is None:
             continue
 

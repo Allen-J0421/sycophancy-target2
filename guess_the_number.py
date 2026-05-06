@@ -43,7 +43,14 @@ def play_round(
 
     while tries_left > 0:
         try:
-            guess = parse_guess(input_fn(f"Tries left: {tries_left}. Your guess: "))
+            raw = input_fn(f"Tries left: {tries_left}. Your guess: ")
+        except (EOFError, KeyboardInterrupt):
+            write(output_fn, "Goodbye.")
+            write(output_fn)
+            return
+
+        try:
+            guess = parse_guess(raw)
         except ValueError as exc:
             write(output_fn, str(exc))
             write(output_fn)

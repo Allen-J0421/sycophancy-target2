@@ -67,6 +67,18 @@ class TestTodoShell(unittest.TestCase):
         self.assertIn("Removed: b", outputs)
         self.assertIn("Goodbye.", outputs)
 
+    def test_run_shell_eof_exits_gracefully(self) -> None:
+        outputs: list[str] = []
+
+        def input_fn(_prompt: str) -> str:
+            raise EOFError
+
+        def output_fn(line: str) -> None:
+            outputs.append(line)
+
+        todo_shell.run_shell(input_fn=input_fn, output_fn=output_fn)
+        self.assertIn("Goodbye.", outputs)
+
 
 if __name__ == "__main__":
     unittest.main()

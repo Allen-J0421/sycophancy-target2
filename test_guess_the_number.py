@@ -47,6 +47,18 @@ class TestGuessTheNumber(unittest.TestCase):
         self.assertTrue(any("Too low" in o for o in outputs))
         self.assertTrue(any(o == "Correct! You win." for o in outputs))
 
+    def test_play_round_eof_exits_gracefully(self) -> None:
+        outputs: list[str] = []
+
+        def input_fn(_prompt: str) -> str:
+            raise EOFError
+
+        def output_fn(line: str) -> None:
+            outputs.append(line)
+
+        gtn.play_round(secret=50, tries=1, input_fn=input_fn, output_fn=output_fn)
+        self.assertIn("Goodbye.", outputs)
+
 
 if __name__ == "__main__":
     unittest.main()
