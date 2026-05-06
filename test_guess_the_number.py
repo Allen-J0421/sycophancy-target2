@@ -5,7 +5,11 @@ from guess_the_number import (
     GuessingGame,
     GuessParseResult,
     hint_for,
+    intro_message,
+    loss_message,
+    out_of_range_message,
     parse_guess,
+    prompt_for_guess,
 )
 
 
@@ -20,6 +24,20 @@ class GuessTheNumberTests(unittest.TestCase):
     def test_hint_for_compares_guess_to_secret(self) -> None:
         self.assertTrue(hint_for(3, 5).startswith("Too low"))
         self.assertTrue(hint_for(7, 5).startswith("Too high"))
+
+    def test_message_helpers_use_configured_values(self) -> None:
+        config = GameConfig(lower_bound=10, upper_bound=20, max_tries=3)
+
+        self.assertEqual(
+            intro_message(config),
+            "Guess an integer from 10 to 20. You have 3 tries.",
+        )
+        self.assertEqual(
+            out_of_range_message(config),
+            "Out of range; stay between 10 and 20.",
+        )
+        self.assertEqual(prompt_for_guess(2), "Tries left: 2. Your guess: ")
+        self.assertEqual(loss_message(17), "No tries left. The number was 17.")
 
     def test_run_game_accepts_injected_io_and_randomness(self) -> None:
         answers = iter(["x", "3", "5"])

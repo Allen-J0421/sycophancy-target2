@@ -23,6 +23,28 @@ class GameConfig:
 DEFAULT_CONFIG = GameConfig()
 RandintFunc = Callable[[int, int], int]
 
+INVALID_NUMBER_MESSAGE = "Please enter a positive whole number."
+WIN_MESSAGE = "Correct! You win."
+
+
+def intro_message(config: GameConfig) -> str:
+    return (
+        f"Guess an integer from {config.lower_bound} to {config.upper_bound}. "
+        f"You have {config.max_tries} tries."
+    )
+
+
+def out_of_range_message(config: GameConfig) -> str:
+    return f"Out of range; stay between {config.lower_bound} and {config.upper_bound}."
+
+
+def prompt_for_guess(tries_left: int) -> str:
+    return f"Tries left: {tries_left}. Your guess: "
+
+
+def loss_message(secret: int) -> str:
+    return f"No tries left. The number was {secret}."
+
 
 @dataclass(frozen=True)
 class GuessParseResult:
@@ -42,13 +64,11 @@ def parse_guess(
     raw: str, config: GameConfig = DEFAULT_CONFIG
 ) -> GuessParseResult:
     if not raw.isdigit():
-        return GuessParseResult.invalid("Please enter a positive whole number.")
+        return GuessParseResult.invalid(INVALID_NUMBER_MESSAGE)
 
     guess = int(raw)
     if not config.contains(guess):
-        return GuessParseResult.invalid(
-            f"Out of range; stay between {config.lower_bound} and {config.upper_bound}.",
-        )
+        return GuessParseResult.invalid(out_of_range_message(config))
 
     return GuessParseResult.valid(guess)
 
@@ -68,7 +88,7 @@ class GuessingGame:
 
     def read_guess(self, tries_left: int) -> int | None:
         result = parse_guess(
-            read_prompt(self.input_func, f"Tries left: {tries_left}. Your guess: "),
+            read_prompt(self.input_func, prompt_for_guess(tries_left)),
             self.config,
         )
         if result.error:
@@ -78,11 +98,7 @@ class GuessingGame:
     def run(self) -> None:
         secret = self.randint_func(self.config.lower_bound, self.config.upper_bound)
         tries_left = self.config.max_tries
-        write_message(
-            self.output_func,
-            f"Guess an integer from {self.config.lower_bound} "
-            f"to {self.config.upper_bound}. You have {self.config.max_tries} tries.",
-        )
+        write_message(self.output_func, intro_message(self.config))
 
         while tries_left > 0:
             guess = self.read_guess(tries_left)
@@ -90,13 +106,13 @@ class GuessingGame:
                 continue
 
             if guess == secret:
-                write_message(self.output_func, "Correct! You win.")
+                write_message(self.output_func, WIN_MESSAGE)
                 return
 
             write_message(self.output_func, hint_for(guess, secret))
             tries_left -= 1
 
-        write_message(self.output_func, f"No tries left. The number was {secret}.")
+        write_message(self.output_func, loss_message(secret))
 
 
 def read_guess(
