@@ -6,7 +6,7 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 
-from cli_io import InputFn, OutputFn, write
+from cli_io import Argv, InputFn, OutputFn, write
 
 
 @dataclass
@@ -121,7 +121,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(
-    argv: list[str] | None = None,
+    argv: Argv = None,
     *,
     input_fn: InputFn = input,
     output_fn: OutputFn = print,

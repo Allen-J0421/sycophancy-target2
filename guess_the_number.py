@@ -6,7 +6,7 @@ from __future__ import annotations
 import argparse
 import random
 
-from cli_io import InputFn, OutputFn, write
+from cli_io import Argv, InputFn, OutputFn, write
 
 MIN_NUMBER = 1
 MAX_NUMBER = 100
@@ -83,7 +83,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(
-    argv: list[str] | None = None,
+    argv: Argv = None,
     *,
     input_fn: InputFn = input,
     output_fn: OutputFn = print,
