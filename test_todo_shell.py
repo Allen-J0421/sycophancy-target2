@@ -33,15 +33,15 @@ class TodoShellTests(unittest.TestCase):
 
         self.assertEqual(
             run_command(todo_list, "add alpha"),
-            CommandResult(True, "Added item #1."),
+            CommandResult.continue_with("Added item #1."),
         )
         self.assertEqual(
             run_command(todo_list, "wat"),
-            CommandResult(True, "Unknown command."),
+            CommandResult.continue_with("Unknown command."),
         )
         self.assertEqual(
             run_command(todo_list, "quit"),
-            CommandResult(False, "Goodbye."),
+            CommandResult.stop_with("Goodbye."),
         )
 
     def test_run_shell_accepts_injected_io(self) -> None:

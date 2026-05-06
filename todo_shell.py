@@ -58,24 +58,32 @@ class CommandResult:
     should_continue: bool
     message: str
 
+    @classmethod
+    def continue_with(cls, message: str) -> CommandResult:
+        return cls(True, message)
+
+    @classmethod
+    def stop_with(cls, message: str) -> CommandResult:
+        return cls(False, message)
+
 
 CommandHandler = Callable[[TodoList, str], CommandResult]
 
 
 def handle_quit(_todo_list: TodoList, _arg: str) -> CommandResult:
-    return CommandResult(False, "Goodbye.")
+    return CommandResult.stop_with("Goodbye.")
 
 
 def handle_add(todo_list: TodoList, arg: str) -> CommandResult:
-    return CommandResult(True, todo_list.add(arg))
+    return CommandResult.continue_with(todo_list.add(arg))
 
 
 def handle_list(todo_list: TodoList, _arg: str) -> CommandResult:
-    return CommandResult(True, todo_list.format())
+    return CommandResult.continue_with(todo_list.format())
 
 
 def handle_done(todo_list: TodoList, arg: str) -> CommandResult:
-    return CommandResult(True, todo_list.complete(arg))
+    return CommandResult.continue_with(todo_list.complete(arg))
 
 
 COMMAND_HANDLERS: dict[str, CommandHandler] = {
@@ -90,7 +98,7 @@ def run_command(todo_list: TodoList, line: str) -> CommandResult:
     command = parse_command(line)
     handler = COMMAND_HANDLERS.get(command.name)
     if handler is None:
-        return CommandResult(True, "Unknown command.")
+        return CommandResult.continue_with("Unknown command.")
 
     return handler(todo_list, command.arg)
 
