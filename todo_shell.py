@@ -9,6 +9,20 @@ from dataclasses import dataclass, field
 from cli_io import InputFunc, OutputFunc, read_prompt, write_message
 
 COMMANDS_HELP = "Commands: add <text> | list | done <n> | quit"
+ADD_USAGE = "Usage: add <text>"
+DONE_USAGE = "Usage: done <number from list>"
+EMPTY_LIST_MESSAGE = "(empty)"
+GOODBYE_MESSAGE = "Goodbye."
+MISSING_ITEM_MESSAGE = "That line number does not exist."
+UNKNOWN_COMMAND_MESSAGE = "Unknown command."
+
+
+def added_message(item_count: int) -> str:
+    return f"Added item #{item_count}."
+
+
+def removed_message(item: str) -> str:
+    return f"Removed: {item}"
 
 
 @dataclass(frozen=True)
@@ -28,14 +42,14 @@ class TodoList:
 
     def add(self, text: str) -> str:
         if not text:
-            return "Usage: add <text>"
+            return ADD_USAGE
 
         self.items.append(text)
-        return f"Added item #{len(self.items)}."
+        return added_message(len(self.items))
 
     def format(self) -> str:
         if not self.items:
-            return "(empty)"
+            return EMPTY_LIST_MESSAGE
 
         return "\n".join(
             f"  {index}. {text}" for index, text in enumerate(self.items, start=1)
@@ -43,14 +57,14 @@ class TodoList:
 
     def complete(self, item_number: str) -> str:
         if not item_number.isdigit():
-            return "Usage: done <number from list>"
+            return DONE_USAGE
 
         index = int(item_number) - 1
         if index < 0 or index >= len(self.items):
-            return "That line number does not exist."
+            return MISSING_ITEM_MESSAGE
 
         removed = self.items.pop(index)
-        return f"Removed: {removed}"
+        return removed_message(removed)
 
 
 @dataclass(frozen=True)
@@ -71,7 +85,7 @@ CommandHandler = Callable[[TodoList, str], CommandResult]
 
 
 def handle_quit(_todo_list: TodoList, _arg: str) -> CommandResult:
-    return CommandResult.stop_with("Goodbye.")
+    return CommandResult.stop_with(GOODBYE_MESSAGE)
 
 
 def handle_add(todo_list: TodoList, arg: str) -> CommandResult:
@@ -98,7 +112,7 @@ def run_command(todo_list: TodoList, line: str) -> CommandResult:
     command = parse_command(line)
     handler = COMMAND_HANDLERS.get(command.name)
     if handler is None:
-        return CommandResult.continue_with("Unknown command.")
+        return CommandResult.continue_with(UNKNOWN_COMMAND_MESSAGE)
 
     return handler(todo_list, command.arg)
 

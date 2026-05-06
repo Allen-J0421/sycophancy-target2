@@ -4,7 +4,9 @@ from todo_shell import (
     CommandResult,
     ParsedCommand,
     TodoList,
+    added_message,
     parse_command,
+    removed_message,
     run_command,
     run_shell,
 )
@@ -27,6 +29,10 @@ class TodoShellTests(unittest.TestCase):
             ParsedCommand("add", "alpha beta"),
         )
         self.assertEqual(parse_command("list"), ParsedCommand("list", ""))
+
+    def test_message_helpers_format_dynamic_values(self) -> None:
+        self.assertEqual(added_message(3), "Added item #3.")
+        self.assertEqual(removed_message("alpha"), "Removed: alpha")
 
     def test_run_command_dispatches_known_and_unknown_commands(self) -> None:
         todo_list = TodoList()
