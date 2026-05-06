@@ -1,6 +1,5 @@
 import unittest
 
-from cli_support import ConsoleIO
 import todo_shell
 
 
@@ -8,16 +7,11 @@ class TodoShellTests(unittest.TestCase):
     def test_run_processes_commands(self) -> None:
         inputs = iter(["add milk", "list", "done 1", "quit"])
         outputs: list[str] = []
-        shell = todo_shell.TodoShell(
-            io=ConsoleIO(
-                input_fn=lambda prompt: next(inputs),
-                output_fn=outputs.append,
-            )
+        todo_shell.run_shell(
+            input_fn=lambda prompt: next(inputs),
+            output_fn=outputs.append,
         )
 
-        shell.run()
-
-        self.assertEqual(shell.items, [])
         self.assertEqual(
             outputs,
             [
