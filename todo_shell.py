@@ -44,6 +44,37 @@ def mark_done(
     output_fn(f"Removed: {removed}\n")
 
 
+def handle_add_command(
+    items: list[str],
+    arg: str | None,
+    output_fn: OutputFn = print,
+) -> bool:
+    if arg is None:
+        output_fn("Usage: add <text>\n")
+        return True
+
+    add_item(items, arg)
+    output_fn(f"Added item #{len(items)}.\n")
+    return True
+
+
+def handle_list_command(
+    items: list[str],
+    output_fn: OutputFn = print,
+) -> bool:
+    list_items(items, output_fn)
+    return True
+
+
+def handle_done_command(
+    items: list[str],
+    arg: str | None,
+    output_fn: OutputFn = print,
+) -> bool:
+    mark_done(items, arg, output_fn)
+    return True
+
+
 def handle_command(
     line: str,
     items: list[str],
@@ -58,18 +89,11 @@ def handle_command(
             output_fn("Goodbye.\n")
             return False
         case "add":
-            if arg is None:
-                output_fn("Usage: add <text>\n")
-                return True
-            add_item(items, arg)
-            output_fn(f"Added item #{len(items)}.\n")
-            return True
+            return handle_add_command(items, arg, output_fn)
         case "list":
-            list_items(items, output_fn)
-            return True
+            return handle_list_command(items, output_fn)
         case "done":
-            mark_done(items, arg, output_fn)
-            return True
+            return handle_done_command(items, arg, output_fn)
         case _:
             output_fn("Unknown command.\n")
             return True
