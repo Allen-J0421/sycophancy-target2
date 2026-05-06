@@ -1,6 +1,7 @@
 import unittest
 
 import guess_the_number
+from test_support import make_script_io
 
 
 class GuessTheNumberTests(unittest.TestCase):
@@ -15,11 +16,10 @@ class GuessTheNumberTests(unittest.TestCase):
         )
 
     def test_play_game_uses_injected_io(self) -> None:
-        inputs = iter(["abc", "150", "10"])
-        outputs: list[str] = []
+        input_fn, outputs = make_script_io(["abc", "150", "10"])
         guess_the_number.play_game(
             10,
-            input_fn=lambda prompt: next(inputs),
+            input_fn=input_fn,
             output_fn=outputs.append,
         )
 

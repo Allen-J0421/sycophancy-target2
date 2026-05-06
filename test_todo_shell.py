@@ -1,14 +1,14 @@
 import unittest
 
 import todo_shell
+from test_support import make_script_io
 
 
 class TodoShellTests(unittest.TestCase):
     def test_run_processes_commands(self) -> None:
-        inputs = iter(["add milk", "list", "done 1", "quit"])
-        outputs: list[str] = []
+        input_fn, outputs = make_script_io(["add milk", "list", "done 1", "quit"])
         todo_shell.run_shell(
-            input_fn=lambda prompt: next(inputs),
+            input_fn=input_fn,
             output_fn=outputs.append,
         )
 
