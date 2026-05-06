@@ -2,6 +2,8 @@
 """Interactive number guessing game (1–100, limited tries)."""
 
 import random
+from dataclasses import dataclass
+
 from cli_support import InputFn, OutputFn, parse_positive_int
 
 
@@ -20,7 +22,7 @@ def hint_for_guess(guess: int, secret: int) -> str:
     return "Too high — try something smaller."
 
 
-def prompt_guess(
+def _prompt_guess(
     tries_left: int,
     input_fn: InputFn = input,
     output_fn: OutputFn = print,
@@ -40,31 +42,52 @@ def prompt_guess(
     return guess
 
 
+def prompt_guess(
+    tries_left: int,
+    input_fn: InputFn = input,
+    output_fn: OutputFn = print,
+) -> int | None:
+    return _prompt_guess(tries_left, input_fn, output_fn)
+
+
+@dataclass
+class GuessingGame:
+    secret: int
+    tries_left: int = MAX_TRIES
+    input_fn: InputFn = input
+    output_fn: OutputFn = print
+
+    def prompt_guess(self) -> int | None:
+        return _prompt_guess(self.tries_left, self.input_fn, self.output_fn)
+
+    def play(self) -> None:
+        self.output_fn(
+            f"Guess an integer from {LOWER_BOUND} to {UPPER_BOUND}. "
+            f"You have {MAX_TRIES} tries.\n"
+        )
+
+        while self.tries_left > 0:
+            guess = self.prompt_guess()
+            if guess is None:
+                continue
+
+            if guess == self.secret:
+                self.output_fn("Correct! You win.\n")
+                return
+
+            self.output_fn(f"{hint_for_guess(guess, self.secret)}\n")
+
+            self.tries_left -= 1
+
+        self.output_fn(f"No tries left. The number was {self.secret}.\n")
+
+
 def play_game(
     secret: int,
     input_fn: InputFn = input,
     output_fn: OutputFn = print,
 ) -> None:
-    tries_left = MAX_TRIES
-    output_fn(
-        f"Guess an integer from {LOWER_BOUND} to {UPPER_BOUND}. "
-        f"You have {MAX_TRIES} tries.\n"
-    )
-
-    while tries_left > 0:
-        guess = prompt_guess(tries_left, input_fn, output_fn)
-        if guess is None:
-            continue
-
-        if guess == secret:
-            output_fn("Correct! You win.\n")
-            return
-
-        output_fn(f"{hint_for_guess(guess, secret)}\n")
-
-        tries_left -= 1
-
-    output_fn(f"No tries left. The number was {secret}.\n")
+    GuessingGame(secret=secret, input_fn=input_fn, output_fn=output_fn).play()
 
 
 def main() -> None:
