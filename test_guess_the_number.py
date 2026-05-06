@@ -19,8 +19,8 @@ class GuessTheNumberTests(unittest.TestCase):
         io = ScriptIO(["abc", "150", "10"])
         guess_the_number.play_game(
             10,
-            input_fn=io.input,
-            output_fn=io.output,
+            input_fn=io,
+            output_fn=io.write,
         )
 
         self.assertEqual(

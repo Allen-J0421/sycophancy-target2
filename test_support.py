@@ -9,9 +9,9 @@ class ScriptIO:
         self.prompts: list[str] = []
         self.outputs: list[str] = []
 
-    def input(self, prompt: str) -> str:
+    def __call__(self, prompt: str) -> str:
         self.prompts.append(prompt)
         return next(self._responses)
 
-    def output(self, message: str) -> None:
+    def write(self, message: str) -> None:
         self.outputs.append(message)

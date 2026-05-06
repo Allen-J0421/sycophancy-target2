@@ -8,8 +8,8 @@ class TodoShellTests(unittest.TestCase):
     def test_run_processes_commands(self) -> None:
         io = ScriptIO(["add milk", "list", "done 1", "quit"])
         todo_shell.run_shell(
-            input_fn=io.input,
-            output_fn=io.output,
+            input_fn=io,
+            output_fn=io.write,
         )
 
         self.assertEqual(
