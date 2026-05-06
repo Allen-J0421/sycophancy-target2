@@ -11,9 +11,15 @@ from cli_io import InputFunc, OutputFunc, write_message
 COMMANDS_HELP = "Commands: add <text> | list | done <n> | quit\n"
 
 
-def parse_command(line: str) -> tuple[str, str]:
+@dataclass(frozen=True)
+class ParsedCommand:
+    name: str
+    arg: str
+
+
+def parse_command(line: str) -> ParsedCommand:
     cmd, _, arg = line.partition(" ")
-    return cmd.lower(), arg.strip()
+    return ParsedCommand(cmd.lower(), arg.strip())
 
 
 @dataclass
@@ -81,12 +87,12 @@ COMMAND_HANDLERS: dict[str, CommandHandler] = {
 
 
 def run_command(todo_list: TodoList, line: str) -> CommandResult:
-    cmd, arg = parse_command(line)
-    handler = COMMAND_HANDLERS.get(cmd)
+    command = parse_command(line)
+    handler = COMMAND_HANDLERS.get(command.name)
     if handler is None:
         return CommandResult(True, "Unknown command.")
 
-    return handler(todo_list, arg)
+    return handler(todo_list, command.arg)
 
 
 def run_shell(

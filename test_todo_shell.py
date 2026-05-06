@@ -1,6 +1,13 @@
 import unittest
 
-from todo_shell import CommandResult, TodoList, run_command, run_shell
+from todo_shell import (
+    CommandResult,
+    ParsedCommand,
+    TodoList,
+    parse_command,
+    run_command,
+    run_shell,
+)
 
 
 class TodoShellTests(unittest.TestCase):
@@ -13,6 +20,13 @@ class TodoShellTests(unittest.TestCase):
     def test_format_items_matches_display_numbers(self) -> None:
         self.assertEqual(TodoList().format(), "(empty)")
         self.assertEqual(TodoList(["alpha", "beta"]).format(), "  1. alpha\n  2. beta")
+
+    def test_parse_command_splits_name_and_arg(self) -> None:
+        self.assertEqual(
+            parse_command("ADD alpha beta"),
+            ParsedCommand("add", "alpha beta"),
+        )
+        self.assertEqual(parse_command("list"), ParsedCommand("list", ""))
 
     def test_run_command_dispatches_known_and_unknown_commands(self) -> None:
         todo_list = TodoList()
