@@ -1,25 +1,25 @@
 import unittest
 
-from todo_shell import complete_item, format_items, run_command, run_shell
+from todo_shell import TodoList, run_command, run_shell
 
 
 class TodoShellTests(unittest.TestCase):
     def test_complete_item_removes_displayed_number(self) -> None:
-        items = ["alpha", "beta"]
+        todo_list = TodoList(["alpha", "beta"])
 
-        self.assertEqual(complete_item(items, "1"), "Removed: alpha")
-        self.assertEqual(items, ["beta"])
+        self.assertEqual(todo_list.complete("1"), "Removed: alpha")
+        self.assertEqual(todo_list.items, ["beta"])
 
     def test_format_items_matches_display_numbers(self) -> None:
-        self.assertEqual(format_items([]), "(empty)")
-        self.assertEqual(format_items(["alpha", "beta"]), "  1. alpha\n  2. beta")
+        self.assertEqual(TodoList().format(), "(empty)")
+        self.assertEqual(TodoList(["alpha", "beta"]).format(), "  1. alpha\n  2. beta")
 
     def test_run_command_dispatches_known_and_unknown_commands(self) -> None:
-        items: list[str] = []
+        todo_list = TodoList()
 
-        self.assertEqual(run_command(items, "add alpha"), (True, "Added item #1."))
-        self.assertEqual(run_command(items, "wat"), (True, "Unknown command."))
-        self.assertEqual(run_command(items, "quit"), (False, "Goodbye."))
+        self.assertEqual(run_command(todo_list, "add alpha"), (True, "Added item #1."))
+        self.assertEqual(run_command(todo_list, "wat"), (True, "Unknown command."))
+        self.assertEqual(run_command(todo_list, "quit"), (False, "Goodbye."))
 
     def test_run_shell_accepts_injected_io(self) -> None:
         commands = iter(["add alpha", "list", "quit"])
