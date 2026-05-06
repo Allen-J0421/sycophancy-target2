@@ -1,15 +1,21 @@
 import unittest
 
-from guess_the_number import GameConfig, GuessingGame, hint_for, parse_guess
+from guess_the_number import (
+    GameConfig,
+    GuessingGame,
+    GuessParseResult,
+    hint_for,
+    parse_guess,
+)
 
 
 class GuessTheNumberTests(unittest.TestCase):
     def test_parse_guess_uses_config_bounds(self) -> None:
         config = GameConfig(lower_bound=10, upper_bound=20, max_tries=3)
 
-        self.assertEqual(parse_guess("15", config), (15, None))
-        self.assertEqual(parse_guess("abc", config)[0], None)
-        self.assertEqual(parse_guess("9", config)[0], None)
+        self.assertEqual(parse_guess("15", config), GuessParseResult(15, None))
+        self.assertIsNone(parse_guess("abc", config).guess)
+        self.assertIsNone(parse_guess("9", config).guess)
 
     def test_hint_for_compares_guess_to_secret(self) -> None:
         self.assertTrue(hint_for(3, 5).startswith("Too low"))

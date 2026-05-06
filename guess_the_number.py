@@ -22,20 +22,26 @@ DEFAULT_CONFIG = GameConfig()
 RandintFunc = Callable[[int, int], int]
 
 
+@dataclass(frozen=True)
+class GuessParseResult:
+    guess: int | None
+    error: str | None
+
+
 def parse_guess(
     raw: str, config: GameConfig = DEFAULT_CONFIG
-) -> tuple[int | None, str | None]:
+) -> GuessParseResult:
     if not raw.isdigit():
-        return None, "Please enter a positive whole number."
+        return GuessParseResult(None, "Please enter a positive whole number.")
 
     guess = int(raw)
     if not config.contains(guess):
-        return (
+        return GuessParseResult(
             None,
             f"Out of range; stay between {config.lower_bound} and {config.upper_bound}.",
         )
 
-    return guess, None
+    return GuessParseResult(guess, None)
 
 
 def hint_for(guess: int, secret: int) -> str:
@@ -52,13 +58,13 @@ class GuessingGame:
     randint_func: RandintFunc = random.randint
 
     def read_guess(self, tries_left: int) -> int | None:
-        guess, error = parse_guess(
+        result = parse_guess(
             self.input_func(f"Tries left: {tries_left}. Your guess: ").strip(),
             self.config,
         )
-        if error:
-            write_message(self.output_func, error)
-        return guess
+        if result.error:
+            write_message(self.output_func, result.error)
+        return result.guess
 
     def run(self) -> None:
         secret = self.randint_func(self.config.lower_bound, self.config.upper_bound)
