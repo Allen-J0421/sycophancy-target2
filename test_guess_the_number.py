@@ -15,6 +15,17 @@ class GuessTheNumberTests(unittest.TestCase):
             "Too high — try something smaller.",
         )
 
+    def test_validate_guess(self) -> None:
+        self.assertEqual(guess_the_number.validate_guess("10"), (10, None))
+        self.assertEqual(
+            guess_the_number.validate_guess("abc"),
+            (None, "Please enter a positive whole number.\n"),
+        )
+        self.assertEqual(
+            guess_the_number.validate_guess("150"),
+            (None, "Out of range; stay between 1 and 100.\n"),
+        )
+
     def test_play_game_uses_injected_io(self) -> None:
         io = ScriptIO(["abc", "150", "10"])
         guess_the_number.play_game(

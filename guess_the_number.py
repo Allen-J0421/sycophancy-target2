@@ -21,21 +21,28 @@ def hint_for_guess(guess: int, secret: int) -> str:
     return "Too high — try something smaller."
 
 
+def validate_guess(raw: str) -> tuple[int | None, str | None]:
+    guess = parse_positive_int(raw)
+    if guess is None:
+        return None, "Please enter a positive whole number.\n"
+
+    if not in_range(guess):
+        return None, (
+            f"Out of range; stay between {LOWER_BOUND} and {UPPER_BOUND}.\n"
+        )
+
+    return guess, None
+
+
 def prompt_guess(
     tries_left: int,
     input_fn: InputFn = input,
     output_fn: OutputFn = print,
 ) -> int | None:
     raw = input_fn(f"Tries left: {tries_left}. Your guess: ").strip()
-    guess = parse_positive_int(raw)
-    if guess is None:
-        output_fn("Please enter a positive whole number.\n")
-        return None
-
-    if not in_range(guess):
-        output_fn(
-            f"Out of range; stay between {LOWER_BOUND} and {UPPER_BOUND}.\n"
-        )
+    guess, message = validate_guess(raw)
+    if message is not None:
+        output_fn(message)
         return None
 
     return guess
