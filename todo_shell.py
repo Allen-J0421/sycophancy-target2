@@ -3,7 +3,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+
 COMMANDS_HELP = "Commands: add <text> | list | done <n> | quit\n"
+CommandHandler = Callable[[list[str], str], tuple[bool, str]]
 
 
 def parse_command(line: str) -> tuple[str, str]:
@@ -38,19 +41,37 @@ def complete_item(items: list[str], item_number: str) -> str:
     return f"Removed: {removed}"
 
 
+def handle_quit(_items: list[str], _arg: str) -> tuple[bool, str]:
+    return False, "Goodbye."
+
+
+def handle_add(items: list[str], arg: str) -> tuple[bool, str]:
+    return True, add_item(items, arg)
+
+
+def handle_list(items: list[str], _arg: str) -> tuple[bool, str]:
+    return True, format_items(items)
+
+
+def handle_done(items: list[str], arg: str) -> tuple[bool, str]:
+    return True, complete_item(items, arg)
+
+
+COMMAND_HANDLERS: dict[str, CommandHandler] = {
+    "quit": handle_quit,
+    "add": handle_add,
+    "list": handle_list,
+    "done": handle_done,
+}
+
+
 def run_command(items: list[str], line: str) -> tuple[bool, str]:
     cmd, arg = parse_command(line)
+    handler = COMMAND_HANDLERS.get(cmd)
+    if handler is None:
+        return True, "Unknown command."
 
-    if cmd == "quit":
-        return False, "Goodbye."
-    if cmd == "add":
-        return True, add_item(items, arg)
-    if cmd == "list":
-        return True, format_items(items)
-    if cmd == "done":
-        return True, complete_item(items, arg)
-
-    return True, "Unknown command."
+    return handler(items, arg)
 
 
 def main() -> None:
