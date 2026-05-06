@@ -5,6 +5,8 @@ from collections.abc import Callable
 from dataclasses import dataclass
 import random
 
+from cli_io import InputFunc, OutputFunc, write_message
+
 
 @dataclass(frozen=True)
 class GameConfig:
@@ -17,8 +19,6 @@ class GameConfig:
 
 
 DEFAULT_CONFIG = GameConfig()
-InputFunc = Callable[[str], str]
-OutputFunc = Callable[[str], None]
 RandintFunc = Callable[[int, int], int]
 
 
@@ -36,10 +36,6 @@ def parse_guess(
         )
 
     return guess, None
-
-
-def write_message(output_func: OutputFunc, message: str) -> None:
-    output_func(f"{message}\n")
 
 
 def read_guess(

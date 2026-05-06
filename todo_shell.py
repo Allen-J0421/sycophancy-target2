@@ -5,10 +5,10 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
+from cli_io import InputFunc, OutputFunc, write_message
+
 COMMANDS_HELP = "Commands: add <text> | list | done <n> | quit\n"
 CommandHandler = Callable[[list[str], str], tuple[bool, str]]
-InputFunc = Callable[[str], str]
-OutputFunc = Callable[[str], None]
 
 
 def parse_command(line: str) -> tuple[str, str]:
@@ -74,10 +74,6 @@ def run_command(items: list[str], line: str) -> tuple[bool, str]:
         return True, "Unknown command."
 
     return handler(items, arg)
-
-
-def write_message(output_func: OutputFunc, message: str) -> None:
-    output_func(f"{message}\n")
 
 
 def run_shell(
