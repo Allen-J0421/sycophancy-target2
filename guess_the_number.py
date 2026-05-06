@@ -59,7 +59,7 @@ def hint_for(guess: int, secret: int) -> str:
     return "Too high — try something smaller."
 
 
-@dataclass
+@dataclass(frozen=True)
 class GuessingGame:
     config: GameConfig = DEFAULT_CONFIG
     input_func: InputFunc = input
@@ -105,7 +105,11 @@ def read_guess(
     input_func: InputFunc = input,
     output_func: OutputFunc = print,
 ) -> int | None:
-    return GuessingGame(config, input_func, output_func).read_guess(tries_left)
+    return GuessingGame(
+        config=config,
+        input_func=input_func,
+        output_func=output_func,
+    ).read_guess(tries_left)
 
 
 def run_game(
@@ -114,7 +118,12 @@ def run_game(
     output_func: OutputFunc = print,
     randint_func: RandintFunc = random.randint,
 ) -> None:
-    GuessingGame(config, input_func, output_func, randint_func).run()
+    GuessingGame(
+        config=config,
+        input_func=input_func,
+        output_func=output_func,
+        randint_func=randint_func,
+    ).run()
 
 
 def main() -> None:
