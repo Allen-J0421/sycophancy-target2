@@ -3,11 +3,9 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
 from dataclasses import dataclass
 
-InputFn = Callable[[str], str]
-OutputFn = Callable[[str], None]
+from cli_io import InputFn, OutputFn, write
 
 
 @dataclass
@@ -48,8 +46,8 @@ class TodoList:
 
 def run_shell(*, input_fn: InputFn = input, output_fn: OutputFn = print) -> None:
     todos = TodoList()
-    output_fn("Commands: add <text> | list | done <n> | quit")
-    output_fn("")
+    write(output_fn, "Commands: add <text> | list | done <n> | quit")
+    write(output_fn)
 
     while True:
         cmd = parse_command(input_fn("todo> "))
@@ -57,47 +55,47 @@ def run_shell(*, input_fn: InputFn = input, output_fn: OutputFn = print) -> None
             continue
 
         if cmd.name == "quit":
-            output_fn("Goodbye.")
-            output_fn("")
+            write(output_fn, "Goodbye.")
+            write(output_fn)
             return
 
         if cmd.name == "add":
             if not cmd.arg:
-                output_fn("Usage: add <text>")
-                output_fn("")
+                write(output_fn, "Usage: add <text>")
+                write(output_fn)
                 continue
             item_num = todos.add(cmd.arg)
-            output_fn(f"Added item #{item_num}.")
-            output_fn("")
+            write(output_fn, f"Added item #{item_num}.")
+            write(output_fn)
             continue
 
         if cmd.name == "list":
             if todos.is_empty():
-                output_fn("(empty)")
-                output_fn("")
+                write(output_fn, "(empty)")
+                write(output_fn)
                 continue
             for line in todos.list_lines():
-                output_fn(line)
-            output_fn("")
+                write(output_fn, line)
+            write(output_fn)
             continue
 
         if cmd.name == "done":
             if not cmd.arg or not cmd.arg.isdigit():
-                output_fn("Usage: done <number from list>")
-                output_fn("")
+                write(output_fn, "Usage: done <number from list>")
+                write(output_fn)
                 continue
             try:
                 removed = todos.done(int(cmd.arg))
             except IndexError as exc:
-                output_fn(str(exc))
-                output_fn("")
+                write(output_fn, str(exc))
+                write(output_fn)
                 continue
-            output_fn(f"Removed: {removed}")
-            output_fn("")
+            write(output_fn, f"Removed: {removed}")
+            write(output_fn)
             continue
 
-        output_fn("Unknown command.")
-        output_fn("")
+        write(output_fn, "Unknown command.")
+        write(output_fn)
 
 
 def main() -> None:
