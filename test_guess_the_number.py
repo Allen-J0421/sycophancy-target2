@@ -1,6 +1,6 @@
 import unittest
 
-from guess_the_number import GameConfig, hint_for, parse_guess, run_game
+from guess_the_number import GameConfig, GuessingGame, hint_for, parse_guess
 
 
 class GuessTheNumberTests(unittest.TestCase):
@@ -24,12 +24,13 @@ class GuessTheNumberTests(unittest.TestCase):
             prompts.append(prompt)
             return next(answers)
 
-        run_game(
-            GameConfig(lower_bound=1, upper_bound=10, max_tries=3),
+        game = GuessingGame(
+            config=GameConfig(lower_bound=1, upper_bound=10, max_tries=3),
             input_func=input_func,
             output_func=output.append,
             randint_func=lambda lower, upper: 5,
         )
+        game.run()
 
         self.assertEqual(
             prompts,
