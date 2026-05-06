@@ -41,16 +41,11 @@ def prompt_guess(
     return guess
 
 
-def handle_guess(
+def respond_to_guess(
+    guess: int,
     secret: int,
-    tries_left: int,
-    input_fn: InputFn = input,
     output_fn: OutputFn = print,
-) -> bool | None:
-    guess = prompt_guess(tries_left, input_fn, output_fn)
-    if guess is None:
-        return None
-
+) -> bool:
     if guess == secret:
         output_fn("Correct! You win.\n")
         return True
@@ -71,11 +66,11 @@ def play_game(
 
     tries_left = MAX_TRIES
     while tries_left > 0:
-        result = handle_guess(secret, tries_left, input_fn, output_fn)
-        if result is None:
+        guess = prompt_guess(tries_left, input_fn, output_fn)
+        if guess is None:
             continue
 
-        if result:
+        if respond_to_guess(guess, secret, output_fn):
             return
 
         tries_left -= 1
