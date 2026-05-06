@@ -2,15 +2,12 @@
 """Interactive number guessing game (1–100, limited tries)."""
 
 import random
-from collections.abc import Callable
+from cli_support import InputFn, OutputFn, parse_positive_int
 
 
 LOWER_BOUND = 1
 UPPER_BOUND = 100
 MAX_TRIES = 7
-
-InputFn = Callable[[str], str]
-OutputFn = Callable[[str], None]
 
 
 def in_range(value: int) -> bool:
@@ -29,11 +26,11 @@ def prompt_guess(
     output_fn: OutputFn = print,
 ) -> int | None:
     raw = input_fn(f"Tries left: {tries_left}. Your guess: ").strip()
-    if not raw.isdigit():
+    guess = parse_positive_int(raw)
+    if guess is None:
         output_fn("Please enter a positive whole number.\n")
         return None
 
-    guess = int(raw)
     if not in_range(guess):
         output_fn(
             f"Out of range; stay between {LOWER_BOUND} and {UPPER_BOUND}.\n"

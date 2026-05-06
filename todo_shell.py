@@ -2,11 +2,7 @@
 """Tiny interactive todo list: add, list, done, quit."""
 
 from __future__ import annotations
-from collections.abc import Callable
-
-
-InputFn = Callable[[str], str]
-OutputFn = Callable[[str], None]
+from cli_support import InputFn, OutputFn, parse_positive_int
 
 
 def print_commands(output_fn: OutputFn = print) -> None:
@@ -33,11 +29,11 @@ def mark_done(
     raw_index: str,
     output_fn: OutputFn = print,
 ) -> None:
-    if not raw_index.isdigit():
+    index = parse_positive_int(raw_index)
+    if index is None:
         output_fn("Usage: done <number from list>\n")
         return
 
-    index = int(raw_index)
     if index < 1 or index > len(items):
         output_fn("That line number does not exist.\n")
         return
