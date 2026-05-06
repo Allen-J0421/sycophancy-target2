@@ -77,6 +77,8 @@ class TestGuessTheNumber(unittest.TestCase):
             gtn.main(["--tries", "0"])
         with self.assertRaises(SystemExit):
             gtn.main(["--min", "10", "--max", "10"])
+        with self.assertRaises(SystemExit):
+            gtn.main(["--secret", "999"])
 
 
 if __name__ == "__main__":

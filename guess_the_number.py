@@ -93,13 +93,11 @@ def main(
         raise SystemExit("--tries must be >= 1")
     if args.min_value >= args.max_value:
         raise SystemExit("--min must be < --max")
+    if args.secret is not None and not (args.min_value <= args.secret <= args.max_value):
+        raise SystemExit("--secret must be within [--min, --max]")
 
-    if args.seed is not None:
-        random.seed(args.seed)
-
-    secret = args.secret
-    if secret is None:
-        secret = random.randint(args.min_value, args.max_value)
+    rng = random.Random(args.seed)
+    secret = args.secret if args.secret is not None else rng.randint(args.min_value, args.max_value)
 
     play_round(
         secret=secret,
