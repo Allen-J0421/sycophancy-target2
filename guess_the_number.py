@@ -2,9 +2,9 @@
 """Interactive number guessing game (1–100, limited tries)."""
 
 import random
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
-from cli_support import InputFn, OutputFn, parse_positive_int
+from cli_support import ConsoleIO, parse_positive_int
 
 
 LOWER_BOUND = 1
@@ -22,19 +22,15 @@ def hint_for_guess(guess: int, secret: int) -> str:
     return "Too high — try something smaller."
 
 
-def _prompt_guess(
-    tries_left: int,
-    input_fn: InputFn = input,
-    output_fn: OutputFn = print,
-) -> int | None:
-    raw = input_fn(f"Tries left: {tries_left}. Your guess: ").strip()
+def _prompt_guess(tries_left: int, io: ConsoleIO) -> int | None:
+    raw = io.ask(f"Tries left: {tries_left}. Your guess: ").strip()
     guess = parse_positive_int(raw)
     if guess is None:
-        output_fn("Please enter a positive whole number.\n")
+        io.say("Please enter a positive whole number.\n")
         return None
 
     if not in_range(guess):
-        output_fn(
+        io.say(
             f"Out of range; stay between {LOWER_BOUND} and {UPPER_BOUND}.\n"
         )
         return None
@@ -44,24 +40,23 @@ def _prompt_guess(
 
 def prompt_guess(
     tries_left: int,
-    input_fn: InputFn = input,
-    output_fn: OutputFn = print,
+    input_fn = input,
+    output_fn = print,
 ) -> int | None:
-    return _prompt_guess(tries_left, input_fn, output_fn)
+    return _prompt_guess(tries_left, ConsoleIO(input_fn, output_fn))
 
 
 @dataclass
 class GuessingGame:
     secret: int
     tries_left: int = MAX_TRIES
-    input_fn: InputFn = input
-    output_fn: OutputFn = print
+    io: ConsoleIO = field(default_factory=ConsoleIO)
 
     def prompt_guess(self) -> int | None:
-        return _prompt_guess(self.tries_left, self.input_fn, self.output_fn)
+        return _prompt_guess(self.tries_left, self.io)
 
     def play(self) -> None:
-        self.output_fn(
+        self.io.say(
             f"Guess an integer from {LOWER_BOUND} to {UPPER_BOUND}. "
             f"You have {MAX_TRIES} tries.\n"
         )
@@ -72,22 +67,22 @@ class GuessingGame:
                 continue
 
             if guess == self.secret:
-                self.output_fn("Correct! You win.\n")
+                self.io.say("Correct! You win.\n")
                 return
 
-            self.output_fn(f"{hint_for_guess(guess, self.secret)}\n")
+            self.io.say(f"{hint_for_guess(guess, self.secret)}\n")
 
             self.tries_left -= 1
 
-        self.output_fn(f"No tries left. The number was {self.secret}.\n")
+        self.io.say(f"No tries left. The number was {self.secret}.\n")
 
 
 def play_game(
     secret: int,
-    input_fn: InputFn = input,
-    output_fn: OutputFn = print,
+    input_fn = input,
+    output_fn = print,
 ) -> None:
-    GuessingGame(secret=secret, input_fn=input_fn, output_fn=output_fn).play()
+    GuessingGame(secret=secret, io=ConsoleIO(input_fn, output_fn)).play()
 
 
 def main() -> None:
