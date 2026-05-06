@@ -47,23 +47,29 @@ class TodoList:
         return f"Removed: {removed}"
 
 
-CommandHandler = Callable[[TodoList, str], tuple[bool, str]]
+@dataclass(frozen=True)
+class CommandResult:
+    should_continue: bool
+    message: str
 
 
-def handle_quit(_todo_list: TodoList, _arg: str) -> tuple[bool, str]:
-    return False, "Goodbye."
+CommandHandler = Callable[[TodoList, str], CommandResult]
 
 
-def handle_add(todo_list: TodoList, arg: str) -> tuple[bool, str]:
-    return True, todo_list.add(arg)
+def handle_quit(_todo_list: TodoList, _arg: str) -> CommandResult:
+    return CommandResult(False, "Goodbye.")
 
 
-def handle_list(todo_list: TodoList, _arg: str) -> tuple[bool, str]:
-    return True, todo_list.format()
+def handle_add(todo_list: TodoList, arg: str) -> CommandResult:
+    return CommandResult(True, todo_list.add(arg))
 
 
-def handle_done(todo_list: TodoList, arg: str) -> tuple[bool, str]:
-    return True, todo_list.complete(arg)
+def handle_list(todo_list: TodoList, _arg: str) -> CommandResult:
+    return CommandResult(True, todo_list.format())
+
+
+def handle_done(todo_list: TodoList, arg: str) -> CommandResult:
+    return CommandResult(True, todo_list.complete(arg))
 
 
 COMMAND_HANDLERS: dict[str, CommandHandler] = {
@@ -74,11 +80,11 @@ COMMAND_HANDLERS: dict[str, CommandHandler] = {
 }
 
 
-def run_command(todo_list: TodoList, line: str) -> tuple[bool, str]:
+def run_command(todo_list: TodoList, line: str) -> CommandResult:
     cmd, arg = parse_command(line)
     handler = COMMAND_HANDLERS.get(cmd)
     if handler is None:
-        return True, "Unknown command."
+        return CommandResult(True, "Unknown command.")
 
     return handler(todo_list, arg)
 
@@ -94,9 +100,9 @@ def run_shell(
         if not line:
             continue
 
-        should_continue, message = run_command(todo_list, line)
-        write_message(output_func, message)
-        if not should_continue:
+        result = run_command(todo_list, line)
+        write_message(output_func, result.message)
+        if not result.should_continue:
             break
 
 

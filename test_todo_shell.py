@@ -1,6 +1,6 @@
 import unittest
 
-from todo_shell import TodoList, run_command, run_shell
+from todo_shell import CommandResult, TodoList, run_command, run_shell
 
 
 class TodoShellTests(unittest.TestCase):
@@ -17,9 +17,18 @@ class TodoShellTests(unittest.TestCase):
     def test_run_command_dispatches_known_and_unknown_commands(self) -> None:
         todo_list = TodoList()
 
-        self.assertEqual(run_command(todo_list, "add alpha"), (True, "Added item #1."))
-        self.assertEqual(run_command(todo_list, "wat"), (True, "Unknown command."))
-        self.assertEqual(run_command(todo_list, "quit"), (False, "Goodbye."))
+        self.assertEqual(
+            run_command(todo_list, "add alpha"),
+            CommandResult(True, "Added item #1."),
+        )
+        self.assertEqual(
+            run_command(todo_list, "wat"),
+            CommandResult(True, "Unknown command."),
+        )
+        self.assertEqual(
+            run_command(todo_list, "quit"),
+            CommandResult(False, "Goodbye."),
+        )
 
     def test_run_shell_accepts_injected_io(self) -> None:
         commands = iter(["add alpha", "list", "quit"])
