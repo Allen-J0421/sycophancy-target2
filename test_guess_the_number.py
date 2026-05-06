@@ -1,7 +1,7 @@
 import unittest
 
 import guess_the_number
-from test_support import make_script_io
+from test_support import ScriptIO
 
 
 class GuessTheNumberTests(unittest.TestCase):
@@ -16,15 +16,15 @@ class GuessTheNumberTests(unittest.TestCase):
         )
 
     def test_play_game_uses_injected_io(self) -> None:
-        input_fn, outputs = make_script_io(["abc", "150", "10"])
+        io = ScriptIO(["abc", "150", "10"])
         guess_the_number.play_game(
             10,
-            input_fn=input_fn,
-            output_fn=outputs.append,
+            input_fn=io.input,
+            output_fn=io.output,
         )
 
         self.assertEqual(
-            outputs,
+            io.outputs,
             [
                 "Guess an integer from 1 to 100. You have 7 tries.\n",
                 "Please enter a positive whole number.\n",

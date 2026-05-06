@@ -1,16 +1,15 @@
 """Helpers for CLI-focused tests."""
 
-from collections.abc import Callable, Iterable
+from collections.abc import Iterable
 
 
-InputFn = Callable[[str], str]
+class ScriptIO:
+    def __init__(self, responses: Iterable[str]):
+        self._responses = iter(responses)
+        self.outputs: list[str] = []
 
+    def input(self, prompt: str) -> str:
+        return next(self._responses)
 
-def make_script_io(responses: Iterable[str]) -> tuple[InputFn, list[str]]:
-    iterator = iter(responses)
-    outputs: list[str] = []
-
-    def input_fn(prompt: str) -> str:
-        return next(iterator)
-
-    return input_fn, outputs
+    def output(self, message: str) -> None:
+        self.outputs.append(message)
