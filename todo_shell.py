@@ -40,39 +40,41 @@ def mark_done(
     output_fn(f"Removed: {removed}\n")
 
 
+def parse_command(line: str) -> tuple[str, str | None]:
+    parts = line.split(maxsplit=1)
+    return parts[0].lower(), parts[1] if len(parts) > 1 else None
+
+
 def handle_command(
     line: str,
     items: list[str],
     output_fn: OutputFn = print,
 ) -> bool:
-    parts = line.split(maxsplit=1)
-    cmd = parts[0].lower()
+    cmd, arg = parse_command(line)
 
-    if cmd == "quit":
-        output_fn("Goodbye.\n")
-        return False
-
-    if cmd == "add":
-        if len(parts) < 2:
-            output_fn("Usage: add <text>\n")
+    match cmd:
+        case "quit":
+            output_fn("Goodbye.\n")
+            return False
+        case "add":
+            if arg is None:
+                output_fn("Usage: add <text>\n")
+                return True
+            add_item(items, arg)
+            output_fn(f"Added item #{len(items)}.\n")
             return True
-        add_item(items, parts[1])
-        output_fn(f"Added item #{len(items)}.\n")
-        return True
-
-    if cmd == "list":
-        list_items(items, output_fn)
-        return True
-
-    if cmd == "done":
-        if len(parts) < 2:
-            output_fn("Usage: done <number from list>\n")
+        case "list":
+            list_items(items, output_fn)
             return True
-        mark_done(items, parts[1], output_fn)
-        return True
-
-    output_fn("Unknown command.\n")
-    return True
+        case "done":
+            if arg is None:
+                output_fn("Usage: done <number from list>\n")
+                return True
+            mark_done(items, arg, output_fn)
+            return True
+        case _:
+            output_fn("Unknown command.\n")
+            return True
 
 
 def run_shell(
