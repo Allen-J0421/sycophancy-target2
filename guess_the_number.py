@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 import random
 
 from cli_io import InputFn, OutputFn, write
@@ -34,10 +35,12 @@ def play_round(
     *,
     secret: int,
     tries: int = MAX_TRIES,
+    min_value: int = MIN_NUMBER,
+    max_value: int = MAX_NUMBER,
     input_fn: InputFn = input,
     output_fn: OutputFn = print,
 ) -> None:
-    write(output_fn, f"Guess an integer from {MIN_NUMBER} to {MAX_NUMBER}. You have {tries} tries.")
+    write(output_fn, f"Guess an integer from {min_value} to {max_value}. You have {tries} tries.")
     write(output_fn)
     tries_left = tries
 
@@ -50,7 +53,7 @@ def play_round(
             return
 
         try:
-            guess = parse_guess(raw)
+            guess = parse_guess(raw, min_value=min_value, max_value=max_value)
         except ValueError as exc:
             write(output_fn, str(exc))
             write(output_fn)
@@ -69,8 +72,43 @@ def play_round(
     write(output_fn)
 
 
-def main() -> None:
-    play_round(secret=random.randint(MIN_NUMBER, MAX_NUMBER), tries=MAX_TRIES)
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--min", type=int, default=MIN_NUMBER, dest="min_value")
+    parser.add_argument("--max", type=int, default=MAX_NUMBER, dest="max_value")
+    parser.add_argument("--tries", type=int, default=MAX_TRIES)
+    parser.add_argument("--seed", type=int, default=None)
+    parser.add_argument("--secret", type=int, default=None)
+    return parser
+
+
+def main(
+    argv: list[str] | None = None,
+    *,
+    input_fn: InputFn = input,
+    output_fn: OutputFn = print,
+) -> None:
+    args = build_parser().parse_args(argv)
+    if args.tries < 1:
+        raise SystemExit("--tries must be >= 1")
+    if args.min_value >= args.max_value:
+        raise SystemExit("--min must be < --max")
+
+    if args.seed is not None:
+        random.seed(args.seed)
+
+    secret = args.secret
+    if secret is None:
+        secret = random.randint(args.min_value, args.max_value)
+
+    play_round(
+        secret=secret,
+        tries=args.tries,
+        min_value=args.min_value,
+        max_value=args.max_value,
+        input_fn=input_fn,
+        output_fn=output_fn,
+    )
 
 
 if __name__ == "__main__":

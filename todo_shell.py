@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 from dataclasses import dataclass
 
 from cli_io import InputFn, OutputFn, write
@@ -44,14 +45,21 @@ class TodoList:
         return self._items.pop(n - 1)
 
 
-def run_shell(*, input_fn: InputFn = input, output_fn: OutputFn = print) -> None:
+def run_shell(
+    *,
+    prompt: str = "todo> ",
+    show_banner: bool = True,
+    input_fn: InputFn = input,
+    output_fn: OutputFn = print,
+) -> None:
     todos = TodoList()
-    write(output_fn, "Commands: add <text> | list | done <n> | quit")
-    write(output_fn)
+    if show_banner:
+        write(output_fn, "Commands: add <text> | list | done <n> | quit")
+        write(output_fn)
 
     while True:
         try:
-            line = input_fn("todo> ")
+            line = input_fn(prompt)
         except (EOFError, KeyboardInterrupt):
             write(output_fn, "Goodbye.")
             write(output_fn)
@@ -105,8 +113,26 @@ def run_shell(*, input_fn: InputFn = input, output_fn: OutputFn = print) -> None
         write(output_fn)
 
 
-def main() -> None:
-    run_shell()
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--prompt", default="todo> ")
+    parser.add_argument("--no-banner", action="store_true")
+    return parser
+
+
+def main(
+    argv: list[str] | None = None,
+    *,
+    input_fn: InputFn = input,
+    output_fn: OutputFn = print,
+) -> None:
+    args = build_parser().parse_args(argv)
+    run_shell(
+        prompt=args.prompt,
+        show_banner=not args.no_banner,
+        input_fn=input_fn,
+        output_fn=output_fn,
+    )
 
 
 if __name__ == "__main__":

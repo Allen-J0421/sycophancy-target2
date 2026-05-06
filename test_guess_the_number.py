@@ -59,6 +59,25 @@ class TestGuessTheNumber(unittest.TestCase):
         gtn.play_round(secret=50, tries=1, input_fn=input_fn, output_fn=output_fn)
         self.assertIn("Goodbye.", outputs)
 
+    def test_main_parses_args_and_runs(self) -> None:
+        inputs = iter(["3"])
+        outputs: list[str] = []
+
+        def input_fn(_prompt: str) -> str:
+            return next(inputs)
+
+        def output_fn(line: str) -> None:
+            outputs.append(line)
+
+        gtn.main(["--secret", "3", "--tries", "1"], input_fn=input_fn, output_fn=output_fn)
+        self.assertIn("Correct! You win.", outputs)
+
+    def test_main_rejects_invalid_args(self) -> None:
+        with self.assertRaises(SystemExit):
+            gtn.main(["--tries", "0"])
+        with self.assertRaises(SystemExit):
+            gtn.main(["--min", "10", "--max", "10"])
+
 
 if __name__ == "__main__":
     unittest.main()

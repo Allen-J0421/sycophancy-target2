@@ -79,6 +79,29 @@ class TestTodoShell(unittest.TestCase):
         todo_shell.run_shell(input_fn=input_fn, output_fn=output_fn)
         self.assertIn("Goodbye.", outputs)
 
+    def test_main_no_banner(self) -> None:
+        outputs: list[str] = []
+
+        def input_fn(_prompt: str) -> str:
+            return "quit"
+
+        def output_fn(line: str) -> None:
+            outputs.append(line)
+
+        todo_shell.main(["--no-banner"], input_fn=input_fn, output_fn=output_fn)
+        self.assertNotIn("Commands: add <text> | list | done <n> | quit", outputs)
+        self.assertIn("Goodbye.", outputs)
+
+    def test_main_passes_prompt(self) -> None:
+        prompts: list[str] = []
+
+        def input_fn(prompt: str) -> str:
+            prompts.append(prompt)
+            return "quit"
+
+        todo_shell.main(["--prompt", "X> "], input_fn=input_fn, output_fn=lambda _line: None)
+        self.assertEqual(prompts[0], "X> ")
+
 
 if __name__ == "__main__":
     unittest.main()
