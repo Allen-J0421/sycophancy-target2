@@ -24,9 +24,13 @@ def list_items(items: list[str], output_fn: OutputFn = print) -> None:
 
 def mark_done(
     items: list[str],
-    raw_index: str,
+    raw_index: str | None,
     output_fn: OutputFn = print,
 ) -> None:
+    if raw_index is None:
+        output_fn("Usage: done <number from list>\n")
+        return
+
     index = parse_positive_int(raw_index)
     if index is None:
         output_fn("Usage: done <number from list>\n")
@@ -64,9 +68,6 @@ def handle_command(
             list_items(items, output_fn)
             return True
         case "done":
-            if arg is None:
-                output_fn("Usage: done <number from list>\n")
-                return True
             mark_done(items, arg, output_fn)
             return True
         case _:
