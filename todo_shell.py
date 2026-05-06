@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 
 from cli_io import InputFunc, OutputFunc, write_message
 
-COMMANDS_HELP = "Commands: add <text> | list | done <n> | quit\n"
+COMMANDS_HELP = "Commands: add <text> | list | done <n> | quit"
 
 
 @dataclass(frozen=True)
@@ -107,7 +107,7 @@ def run_shell(
     input_func: InputFunc = input, output_func: OutputFunc = print
 ) -> None:
     todo_list = TodoList()
-    output_func(COMMANDS_HELP)
+    write_message(output_func, COMMANDS_HELP)
 
     while True:
         line = input_func("todo> ").strip()
